@@ -1,0 +1,5 @@
+/out/
+*.psd
+!*.java
+!*.wav
+!*.png
