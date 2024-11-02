@@ -64,17 +64,17 @@ public class DrawLoop extends RateLimited
                     g2d.fillRect(0, 0, width, height);
                 }
                 case GameStates.LOADING -> {
-                    g2d.drawImage(engine.splash, 0, 0, null);
+                    engine.splash.drawCentered(g2d, width/2, height/2);
                 }
                 case GameStates.MAIN_MENU -> {
-                    g2d.drawImage(engine.splash, 0, 0, null);
+                    g2d.setColor(Color.CYAN);
+                    g2d.fillRect(0, 0, width, height);
                     engine.mainMenu.draw(g2d);
                 }
                 case GameStates.OPTIONS_MENU -> {
-                    g2d.drawImage(engine.splash, 0, 0, null);
                     engine.optionsMenu.draw(g2d);
                 }
-                case GameStates.RUNNING_NORMAL -> {
+                case GameStates.RUNNING_CLASSIC -> {
                     g2d.setColor(Color.CYAN);
                     g2d.fillRect(0, 0, width, height);
 

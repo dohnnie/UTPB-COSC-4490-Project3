@@ -1,4 +1,4 @@
-package src.Objects.UI;
+package src.UI;
 
 import src.Threads.Engine;
 

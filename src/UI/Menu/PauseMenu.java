@@ -1,20 +1,19 @@
-package src.Objects.UI.Menu;
+package src.UI.Menu;
 
-import src.Objects.UI.ImageObject;
 import src.Threads.Engine;
 
 import java.awt.*;
 
 public class PauseMenu extends Menu {
 
-    public ImageObject menuTitle;
-    public ImageObject saveGame;
-    public ImageObject loadGame;
-    public ImageObject resetLevel;
-    public ImageObject optsMenu;
-    public ImageObject resumeGame;
-    public ImageObject backToMain;
-    public ImageObject exitGame;
+    public MenuSelection menuTitle;
+    public MenuSelection saveGame;
+    public MenuSelection loadGame;
+    public MenuSelection resetLevel;
+    public MenuSelection optsMenu;
+    public MenuSelection resumeGame;
+    public MenuSelection backToMain;
+    public MenuSelection exitGame;
 
     public PauseMenu(Engine e) {
         super(e, 0, 0);
@@ -41,7 +40,7 @@ public class PauseMenu extends Menu {
     }
 
     @Override
-    public void enter() {}
+    public void select() {}
 
     @Override
     public void draw(Graphics2D g2d) {

@@ -2,12 +2,9 @@ package src.Threads;
 
 import src.Loader.Loader;
 import src.Objects.Actors.Bird;
-import src.Objects.UI.*;
+import src.UI.*;
 import src.Objects.Actors.Pipe;
-import src.Objects.UI.Menu.GameOverMenu;
-import src.Objects.UI.Menu.MainMenu;
-import src.Objects.UI.Menu.OptionsMenu;
-import src.Objects.UI.Menu.PauseMenu;
+import src.UI.Menu.*;
 import src.Settings.Settings;
 
 import javax.imageio.ImageIO;
@@ -28,13 +25,13 @@ public class Engine extends RateLimited
     private final DrawLoop canvas;
 
     Loader loader;
-    BufferedImage splash;
+    public MenuImage splash;
     MainMenu mainMenu;
     OptionsMenu optionsMenu;
     PauseMenu pauseMenu;
     GameOverMenu killMenu;
-    //LoadMenu loadMenu;
-    //SaveMenu saveMenu;
+    LoadMenu loadMenu;
+    SaveMenu saveMenu;
     int gameLevel = 1;
 
     public Bird bird;
@@ -87,6 +84,14 @@ public class Engine extends RateLimited
 
         frame.setVisible(true);
         frame.requestFocus();
+
+        loader = new Loader();
+        mainMenu = new MainMenu(this);
+        optionsMenu = new OptionsMenu(this);
+        loadMenu = new LoadMenu(this);
+        saveMenu = new SaveMenu(this);
+        pauseMenu = new PauseMenu(this);
+        killMenu = new GameOverMenu(this);
 
         try {
             File scoreFile = new File("score.txt");
@@ -156,7 +161,7 @@ public class Engine extends RateLimited
         Thread drawLoop = new Thread(canvas);
         drawLoop.start();
 
-        /*frame.addKeyListener(new KeyListener()
+        frame.addKeyListener(new KeyListener()
         {
             @Override
             public void keyTyped(KeyEvent e)
@@ -168,16 +173,19 @@ public class Engine extends RateLimited
             {
                 if(e.getKeyCode() == KeyEvent.VK_SPACE)
                 {
-                    if (engineState == GameStates.RUNNING)
-                        bird.flap();
+                    switch (engineState) {
+                        case GameStates.RUNNING_CLASSIC -> {
+                            bird.flap();
+                        }
+                    }
                 }
                 if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
                 {
-                    if (engineState == GameStates.RUNNING) {
-                        engineState = GameStates.PAUSE_MENU;
-                    }
-                    if (engineState == GameStates.PAUSE_MENU) {
-                        engineState = GameStates.RUNNING;
+                    switch (engineState) {
+                        case GameStates.RUNNING_CLASSIC -> {}
+                        case GameStates.RUNNING_ENDLESS -> {}
+                        case GameStates.RUNNING_NORMAL -> {}
+                        case GameStates.PAUSE_MENU -> {}
                     }
                 }
                 if(e.getKeyCode() == KeyEvent.VK_UP)
@@ -203,7 +211,7 @@ public class Engine extends RateLimited
                         case GameStates.SAVE_MENU -> {
                             saveMenu.cursorUp();
                         }
-                        case GameStates.RUNNING -> {}
+                        case GameStates.RUNNING_CLASSIC -> {}
                     }
                 }
                 if(e.getKeyCode() == KeyEvent.VK_DOWN)
@@ -229,7 +237,7 @@ public class Engine extends RateLimited
                         case GameStates.SAVE_MENU -> {
                             saveMenu.cursorDn();
                         }
-                        case GameStates.RUNNING -> {}
+                        case GameStates.RUNNING_CLASSIC -> {}
                     }
                 }
                 if(e.getKeyCode() == KeyEvent.VK_RIGHT)
@@ -255,7 +263,7 @@ public class Engine extends RateLimited
                         case GameStates.SAVE_MENU -> {
                             saveMenu.cursorRt();
                         }
-                        case GameStates.RUNNING -> {}
+                        case GameStates.RUNNING_CLASSIC -> {}
                     }
                 }
                 if(e.getKeyCode() == KeyEvent.VK_LEFT)
@@ -281,23 +289,33 @@ public class Engine extends RateLimited
                         case GameStates.SAVE_MENU -> {
                             saveMenu.cursorLt();
                         }
-                        case GameStates.RUNNING -> {}
+                        case GameStates.RUNNING_CLASSIC -> {}
                     }
                 }
                 if(e.getKeyCode() == KeyEvent.VK_ENTER)
                 {
-                    if (!running)
-                    {
-                        if (canvas.menuCursor == 0)
-                            reset();
-                        if (canvas.menuCursor == 1)
-                            System.exit(0);
-                        if (canvas.menuCursor == 3)
-                            randomGaps = !randomGaps;
-                        if (canvas.menuCursor == 5)
-                            ramping = !ramping;
-                        if (canvas.menuCursor == 6)
-                            debug = !debug;
+                    switch (engineState) {
+                        case GameStates.PRELOAD -> {}
+                        case GameStates.LOADING -> {}
+                        case GameStates.MAIN_MENU -> {
+                            mainMenu.select();
+                        }
+                        case GameStates.OPTIONS_MENU -> {
+                            optionsMenu.select();
+                        }
+                        case GameStates.PAUSE_MENU -> {
+                            pauseMenu.select();
+                        }
+                        case GameStates.GAME_OVER -> {
+                            killMenu.select();
+                        }
+                        case GameStates.LOAD_MENU -> {
+                            loadMenu.select();
+                        }
+                        case GameStates.SAVE_MENU -> {
+                            saveMenu.select();
+                        }
+                        case GameStates.RUNNING_CLASSIC -> {}
                     }
                 }
             }
@@ -306,7 +324,7 @@ public class Engine extends RateLimited
             public void keyReleased(KeyEvent e)
             {
             }
-        });*/
+        });
 
         frame.addMouseListener(new MouseListener() {
             @Override
@@ -384,20 +402,39 @@ public class Engine extends RateLimited
 
             switch (engineState) {
                 case GameStates.PRELOAD -> {
-                    //splash = loader.loadSplash();
-                    engineState = GameStates.LOADING;
+                    try {
+                        splash = loader.loadSplash();
+                        engineState = GameStates.LOADING;
+                    } catch (Exception ex) {
+                        System.out.printf("Fatal exception when loading splash screen!%n");
+                        ex.printStackTrace();
+                        System.exit(0);
+                    }
                 }
                 case GameStates.LOADING -> {
-                    loader.loadMain(mainMenu);
-                    //loader.loadOptions(optionsMenu);
-                    //loader.loadPause(pauseMenu);
-                    //loader.loadKill(killMenu);
-                    //loader.loadUI(this);
-                    engineState = GameStates.MAIN_MENU;
+                    try {
+                        System.out.println("Loading main menu graphics...");
+                        loader.loadMain(mainMenu);
+                        System.out.println("Loading options menu graphics...");
+                        loader.loadOptions(optionsMenu);
+                        System.out.println("Loading pause menu graphics...");
+                        loader.loadPause(pauseMenu);
+                        System.out.println("Loading kill menu graphics...");
+                        loader.loadKill(killMenu);
+                        System.out.println("Loading load menu graphics...");
+                        loader.loadLoad(loadMenu);
+                        System.out.println("Loading save menu graphics...");
+                        loader.loadSave(saveMenu);
+                        engineState = GameStates.MAIN_MENU;
+                    } catch (Exception ex) {
+                        System.out.printf("Fatal exception during loading!%n");
+                        ex.printStackTrace();
+                        System.exit(0);
+                    }
                 }
                 case GameStates.MAIN_MENU -> {}
                 case GameStates.OPTIONS_MENU -> {}
-                case GameStates.RUNNING_NORMAL -> {
+                case GameStates.RUNNING_CLASSIC -> {
                     fog_level -= Settings.FOG_STEP;
                     fog_level = Math.max(fog_level, 0.0f);
 
@@ -496,6 +533,8 @@ public class Engine extends RateLimited
                         }
                     }
                 }
+                case GameStates.RUNNING_NORMAL -> {
+                }
                 case GameStates.PAUSE_MENU -> {}
                 case GameStates.GAME_OVER -> {}
                 case GameStates.LOAD_MENU -> {}
@@ -504,6 +543,18 @@ public class Engine extends RateLimited
 
             limit(startTime);
         }
+    }
+
+    public void loadLevel(int index) {
+    }
+
+    public void loadSave(int index) {
+    }
+
+    public void loadEndless() {
+    }
+
+    public void loadClassic() {
     }
 
     public void reset()

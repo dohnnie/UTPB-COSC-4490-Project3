@@ -1,11 +1,15 @@
-package src.Objects.UI.Menu;
+package src.UI.Menu;
 
 import src.Threads.Engine;
 
-import java.awt.*;
+public class SaveMenu extends LoadMenu {
 
-public class GameOverMenu extends PauseMenu {
-    public GameOverMenu(Engine e) {
+    public MenuSelection menuTitle;
+    public MenuSelection newSave;
+    public MenuSelection[] saveThumbs;
+    public MenuSelection backButton;
+
+    public SaveMenu(Engine e) {
         super(e);
     }
 
@@ -30,10 +34,5 @@ public class GameOverMenu extends PauseMenu {
     }
 
     @Override
-    public void enter() {}
-
-    @Override
-    public void draw(Graphics2D g2d) {
-
-    }
+    public void select() {}
 }

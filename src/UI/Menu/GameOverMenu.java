@@ -1,18 +1,12 @@
-package src.Objects.UI.Menu;
+package src.UI.Menu;
 
-import src.Objects.UI.ImageObject;
 import src.Threads.Engine;
 
 import java.awt.*;
 
-public class LoadMenu extends Menu {
-
-    public ImageObject menuTitle;
-    public ImageObject[] saveThumbs;
-    public ImageObject backButton;
-
-    public LoadMenu(Engine e) {
-        super(e, 0, 0);
+public class GameOverMenu extends PauseMenu {
+    public GameOverMenu(Engine e) {
+        super(e);
     }
 
     @Override
@@ -36,7 +30,7 @@ public class LoadMenu extends Menu {
     }
 
     @Override
-    public void enter() {}
+    public void select() {}
 
     @Override
     public void draw(Graphics2D g2d) {

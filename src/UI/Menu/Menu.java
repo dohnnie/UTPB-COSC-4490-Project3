@@ -1,6 +1,5 @@
-package src.Objects.UI.Menu;
+package src.UI.Menu;
 
-import src.Objects.UI.ImageObject;
 import src.Threads.Engine;
 
 import java.awt.*;
@@ -11,10 +10,10 @@ public abstract class Menu {
     int cursor = 0;
     int cursorMax = 0;
 
-    public ImageObject menuBackground;
-    public ImageObject menuTitle;
-    public ArrayList<ImageObject> menuItems;
-    public ImageObject cursorImg;
+    public MenuImage menuBackground;
+    public MenuImage menuTitle;
+    public ArrayList<MenuImage> menuItems;
+    public MenuImage cursorImg;
     int menuW;
     int menuH;
     int menuXCenter;
@@ -25,6 +24,8 @@ public abstract class Menu {
         engine = e;
         cursor = cDefault;
         cursorMax = cMax;
+
+        menuItems = new ArrayList<>();
     }
 
     public void scale() {
@@ -33,12 +34,12 @@ public abstract class Menu {
 
         menuW = scnW / 2;
         menuH = scnH * 6 / 8;
-        menuYOrigin = menuH / 2;
+        menuYOrigin = menuH / 6;
         menuXCenter = scnW / 2;
         padding = scnH / 100;
 
         int maxW = menuTitle.defaultWidth;
-        for (ImageObject img : menuItems) {
+        for (MenuImage img : menuItems) {
             if (img.defaultWidth > maxW) {
                 maxW = img.defaultWidth;
             }
@@ -46,21 +47,23 @@ public abstract class Menu {
         double scaleFactor = (double)(scnW/2) / (double)maxW;
         menuTitle.scale(scaleFactor);
         cursorImg.scale(scaleFactor);
-        for (ImageObject img : menuItems) {
+        for (MenuImage img : menuItems) {
             img.scale(scaleFactor);
         }
 
         int totalHeight = padding * menuItems.size();
-        for (ImageObject img : menuItems) {
-            totalHeight += img.targetHeight;
+        for (MenuImage img : menuItems) {
+            totalHeight += img.height;
         }
         if (totalHeight > menuH) {
             scaleFactor = (double) menuH / (double) totalHeight;
             menuTitle.scale(scaleFactor);
             cursorImg.scale(scaleFactor);
-            for (ImageObject img : menuItems) {
+            for (MenuImage img : menuItems) {
                 img.scale(scaleFactor);
             }
+        } else {
+            menuYOrigin += (menuH - totalHeight) / 2;
         }
     }
 
@@ -80,10 +83,26 @@ public abstract class Menu {
     public void cursorLt() {
     }
 
-    public void enter() {
+    public void select() {
     }
 
-    public abstract void draw(Graphics2D g2d);
+    public void draw(Graphics2D g2d) {
+        if (menuBackground != null) {
+            g2d.drawImage(menuBackground.image, 0, 0, null);
+        }
+        if (menuTitle != null) {
+            g2d.drawImage(menuTitle.image, menuXCenter - menuTitle.width/2, menuYOrigin, null);
+        }
+        int yOffset = menuTitle.height + padding;
+        for (int i = 0; i < menuItems.size(); i++) {
+            MenuImage img = menuItems.get(i);
+            img.drawCenteredX(g2d, menuXCenter, menuYOrigin + yOffset);
+            if (cursor == i) {
+                cursorImg.drawAt(g2d, menuXCenter - img.width/2 - padding - cursorImg.width, menuYOrigin + yOffset);
+            }
+            yOffset += img.height + padding;
+        }
+    }
 
 
     /*

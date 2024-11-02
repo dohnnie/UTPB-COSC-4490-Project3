@@ -1,4 +1,4 @@
-package src.Objects.UI.Controls;
+package src.UI.Controls;
 
 public class SonyController {
 }

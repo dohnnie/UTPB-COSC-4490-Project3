@@ -1,23 +1,43 @@
 package src.Loader;
 
-import src.Objects.UI.*;
-import src.Objects.UI.Menu.*;
+import src.UI.*;
+import src.UI.Menu.*;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.tools.Tool;
+import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 public class Loader {
-    public BufferedImage[] loadImageArray(String fileName, int numFrames) {
-        return null;
+
+    private String path;
+    private String menuPath;
+    private String actorPath;
+    private String fxPath;
+    private String audioPath;
+
+    public Loader() {
+        path = String.format("%s%sdata%s", System.getProperty("user.dir"), File.separator, File.separator);
+        menuPath = String.format("%smenu%s", path, File.separator);
+        actorPath = String.format("%sactors%s", path, File.separator);
+        fxPath = String.format("%seffects%s", path, File.separator);
+        audioPath = String.format("%saudio%s", path, File.separator);
     }
 
-    public BufferedImage loadImage(String fileName) {
-        return null;
+    public BufferedImage[] splitFramesHorizontal(BufferedImage image, int numFrames) {
+        BufferedImage[] array = new BufferedImage[numFrames];
+        return array;
+    }
+
+    public BufferedImage[] splitFramesVertical(BufferedImage image, int numFrames) {
+        BufferedImage[] array = new BufferedImage[numFrames];
+        return array;
+    }
+
+    public BufferedImage loadImage(String fileName) throws IOException {
+        return ImageIO.read(new File(fileName));
     }
 
     /*private BufferedImage loadImage(String fileName, double scale, boolean toScreen) throws IOException {
@@ -34,59 +54,51 @@ public class Loader {
         return outImage;
     }*/
 
-    private void loadAudio(String fileName) {
-        try
-        {
-            AudioInputStream ais = AudioSystem.getAudioInputStream(new File("data/audio/flap.wav").getAbsoluteFile());
-            Clip clip = AudioSystem.getClip();
-            clip.open(ais);
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
+    private void loadAudio(String fileName) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        AudioInputStream ais = AudioSystem.getAudioInputStream(new File("data/audio/flap.wav").getAbsoluteFile());
+        Clip clip = AudioSystem.getClip();
+        clip.open(ais);
     }
 
     private void loadMusicLoop(String fileName, int startFrame, int endFrame) {}
 
-    public ImageObject loadSplash() {
-        return null;
+    public MenuImage loadSplash() throws IOException {
+        MenuImage splash = new MenuImage(loadImage(path + "splash.png"));
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        splash.scaleToWidth(tk.getScreenSize().width/4);
+        return splash;
     }
 
-    public void loadGeneral(GeneralUI ui) {
+    public void loadGeneral(GeneralUI ui) throws IOException {
         String fmt = String.format("data%smenu%s", File.separator, File.separator);
-        ui.num0 = new ImageObject(loadImage(fmt + "0.png"));
-        ui.num1 = new ImageObject(loadImage(fmt + "1.png"));
-        ui.num2 = new ImageObject(loadImage(fmt + "2.png"));
-        ui.num3 = new ImageObject(loadImage(fmt + "3.png"));
-        ui.num4 = new ImageObject(loadImage(fmt + "4.png"));
-        ui.num5 = new ImageObject(loadImage(fmt + "5.png"));
-        ui.num6 = new ImageObject(loadImage(fmt + "6.png"));
-        ui.num7 = new ImageObject(loadImage(fmt + "7.png"));
-        ui.num8 = new ImageObject(loadImage(fmt + "8.png"));
-        ui.num9 = new ImageObject(loadImage(fmt + "9.png"));
+        ui.num0 = new MenuImage(loadImage(fmt + "0.png"));
+        ui.num1 = new MenuImage(loadImage(fmt + "1.png"));
+        ui.num2 = new MenuImage(loadImage(fmt + "2.png"));
+        ui.num3 = new MenuImage(loadImage(fmt + "3.png"));
+        ui.num4 = new MenuImage(loadImage(fmt + "4.png"));
+        ui.num5 = new MenuImage(loadImage(fmt + "5.png"));
+        ui.num6 = new MenuImage(loadImage(fmt + "6.png"));
+        ui.num7 = new MenuImage(loadImage(fmt + "7.png"));
+        ui.num8 = new MenuImage(loadImage(fmt + "8.png"));
+        ui.num9 = new MenuImage(loadImage(fmt + "9.png"));
 
-        ui.percent = new ImageObject(loadImage(fmt + "percent.png"));
-
-        ui.sliderPip = new ImageObject(loadImage(fmt + "pip.png"));
-        ui.sliderDash = new ImageObject(loadImage(fmt + "dash.png"));
+        ui.percent = new MenuImage(loadImage(fmt + "percent.png"));
     }
 
-    public void loadMain(MainMenu menu) {
-        String imgPath = String.format("data%smenu%s", File.separator, File.separator);
+    public void loadMain(MainMenu menu) throws IOException {
         //menu.titleMusicLoop = loadAudio(null);
-        menu.menuBackground = null;//new ImageObject(loadImage(null));
-        menu.menuTitle = new ImageObject(loadImage(imgPath + "gametitle.png"));
-        menu.cursorImg = new ImageObject(loadImage(imgPath + "arrow.png"));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "newGame.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "continue.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "loadGame.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "levelSelect.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "endlessMode.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "classicMode.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "options.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "credits.png")));
-        menu.menuItems.add(new ImageObject(loadImage(imgPath + "quitGame.png")));
+        menu.menuBackground = new MenuImage(loadImage(path + "ph.png")); // TODO: real menu background
+        menu.menuTitle = new MenuImage(loadImage(menuPath + "gametitle.png"));
+        menu.cursorImg = new MenuImage(loadImage(menuPath + "arrow.png"));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "newGame.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "continue.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "loadGame.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "levelSelect.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "endlessMode.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "classicMode.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "options.png")));
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "exitGame.png"))); // TODO: actual credits
+        menu.menuItems.add(new MenuSelection(() -> {}, loadImage(menuPath + "quitGame.png")));
         menu.scale();
     }
 

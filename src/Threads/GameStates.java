@@ -12,6 +12,9 @@ public class GameStates {
     public static final int CREDITS = 20;
     public static final int LEVEL_SELECT = 90;
     public static final int RUNNING_NORMAL = 101;
+    public static final int PAUSE_NORMAL = 111;
     public static final int RUNNING_ENDLESS = 102;
+    public static final int PAUSE_ENDLESS = 112;
     public static final int RUNNING_CLASSIC = 103;
+    public static final int PAUSE_CLASSIC = 113;
 }
