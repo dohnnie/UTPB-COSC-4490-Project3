@@ -14,5 +14,6 @@
     <orderEntry type="library" name="jogamp.jogl.all.main" level="project" />
     <orderEntry type="library" name="jogamp.joal" level="project" />
     <orderEntry type="library" name="jogamp.joal.main" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>

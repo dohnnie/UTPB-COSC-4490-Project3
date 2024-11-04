@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import javafx.scene.text.Font;
 
 public class Loader {
 
@@ -72,5 +73,15 @@ public class Loader {
 
     public void loadMenu(Menu menu) throws IOException {
         menu.load(this);
+    }
+
+    public static Font loadFont(double size) {
+        if (!Font.getFontNames().contains("Ravie")) {
+            return Font.loadFont(path + "Ravie.ttf", size);
+        }
+        return new Font("Ravie", size);
+    }
+
+    public void loadGeneral() {
     }
 }
