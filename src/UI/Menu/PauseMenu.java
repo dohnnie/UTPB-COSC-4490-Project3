@@ -1,49 +1,31 @@
 package src.UI.Menu;
 
+import src.Loader.Loader;
 import src.Threads.Engine;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class PauseMenu extends Menu {
 
-    public MenuSelection menuTitle;
-    public MenuSelection saveGame;
-    public MenuSelection loadGame;
-    public MenuSelection resetLevel;
-    public MenuSelection optsMenu;
-    public MenuSelection resumeGame;
-    public MenuSelection backToMain;
-    public MenuSelection exitGame;
-
     public PauseMenu(Engine e) {
         super(e, 0, 0);
+
+        menuTitle = new MenuText("Paused!");
+        menuItems.add(new MenuText("Save Game"));
+        menuItems.add(new MenuText("Load Game"));
+        menuItems.add(new MenuText("Options Menu"));
+        menuItems.add(new MenuText("Resume"));
+        menuItems.add(new MenuText("Restart Level"));
+        menuItems.add(new MenuText("Quit to Main Menu"));
+        menuItems.add(new MenuText("Quit Game"));
     }
 
     @Override
-    public void cursorUp() {
-        super.cursorUp();
-    }
-
-    @Override
-    public void cursorDn() {
-        super.cursorDn();
-    }
-
-    @Override
-    public void cursorRt() {
-
-    }
-
-    @Override
-    public void cursorLt() {
+    public void load(Loader l) throws IOException {
 
     }
 
     @Override
     public void select() {}
-
-    @Override
-    public void draw(Graphics2D g2d) {
-
-    }
 }

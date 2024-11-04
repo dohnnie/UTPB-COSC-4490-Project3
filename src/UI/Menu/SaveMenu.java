@@ -1,35 +1,21 @@
 package src.UI.Menu;
 
+import src.Loader.Loader;
 import src.Threads.Engine;
 
-public class SaveMenu extends LoadMenu {
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
-    public MenuSelection menuTitle;
-    public MenuSelection newSave;
-    public MenuSelection[] saveThumbs;
-    public MenuSelection backButton;
+public class SaveMenu extends Menu {
+
+    public BufferedImage[] saveThumbs;
 
     public SaveMenu(Engine e) {
-        super(e);
+        super(e, 0, 0);
     }
 
     @Override
-    public void cursorUp() {
-        super.cursorUp();
-    }
-
-    @Override
-    public void cursorDn() {
-        super.cursorDn();
-    }
-
-    @Override
-    public void cursorRt() {
-
-    }
-
-    @Override
-    public void cursorLt() {
+    public void load(Loader l) throws IOException {
 
     }
 

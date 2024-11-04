@@ -25,7 +25,7 @@ public class Engine extends RateLimited
     private final DrawLoop canvas;
 
     Loader loader;
-    public MenuImage splash;
+    public UIImage splash;
     MainMenu mainMenu;
     OptionsMenu optionsMenu;
     PauseMenu pauseMenu;
@@ -414,17 +414,17 @@ public class Engine extends RateLimited
                 case GameStates.LOADING -> {
                     try {
                         System.out.println("Loading main menu graphics...");
-                        loader.loadMain(mainMenu);
+                        loader.loadMenu(mainMenu);
                         System.out.println("Loading options menu graphics...");
-                        loader.loadOptions(optionsMenu);
+                        loader.loadMenu(optionsMenu);
                         System.out.println("Loading pause menu graphics...");
-                        loader.loadPause(pauseMenu);
+                        loader.loadMenu(pauseMenu);
                         System.out.println("Loading kill menu graphics...");
-                        loader.loadKill(killMenu);
+                        loader.loadMenu(killMenu);
                         System.out.println("Loading load menu graphics...");
-                        loader.loadLoad(loadMenu);
+                        loader.loadMenu(loadMenu);
                         System.out.println("Loading save menu graphics...");
-                        loader.loadSave(saveMenu);
+                        loader.loadMenu(saveMenu);
                         engineState = GameStates.MAIN_MENU;
                     } catch (Exception ex) {
                         System.out.printf("Fatal exception during loading!%n");
