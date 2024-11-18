@@ -1,39 +1,39 @@
 package src.Levels;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import src.Audio.MusicFanfare;
 import src.Audio.MusicLoop;
 import src.Drawing.WorldLayer.Layer;
 import src.Objects.Activators.Activator;
+import src.Objects.Actors.Player;
 import src.Objects.Platform;
-import src.Objects.EnemySpawner;
-import src.Objects.PlayerSpawner;
+import src.Objects.Spawner;
 import src.Objects.WorldFloor;
+import src.Threads.Updateable;
 
-public class Level {
-    private MusicLoop looped;
-    private MusicFanfare endLevel;
-    private MusicFanfare bossEntry;
-    private MusicFanfare bossVictory;
+public abstract class Level implements Updateable {
+    protected MusicLoop looped;
+    protected MusicFanfare endLevel;
+    protected MusicFanfare bossEntry;
+    protected MusicFanfare bossVictory;
+
+    protected Player player;
 
     ArrayList<Layer> worldArt = new ArrayList<>();
     WorldFloor floor;
     ArrayList<Platform> worldGeom = new ArrayList<>();
     ArrayList<Activator> activators = new ArrayList<>();
 
-    ArrayList<EnemySpawner> spawners = new ArrayList<>();
+    ArrayList<Spawner> spawners = new ArrayList<>();
 
-    ArrayList<PlayerSpawner> spawnPoints = new ArrayList<>();
+    ArrayList<Spawner> spawnPoints = new ArrayList<>();
 
-    public void loadFromFile(String fileName) {
+    public void loadFromFile(String fileName) {}
 
-    }
+    public void saveToFile(String fileName) {}
 
-    public void saveToFile(String fileName) {
+    public abstract void loadArt() throws Exception;
 
-    }
-
-    public void loadArt() {
-
-    }
+    public abstract void update();
 }

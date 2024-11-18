@@ -1,6 +1,6 @@
 package src.Collision;
 
-import java.awt.Point;
+import java.awt.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
@@ -46,5 +46,12 @@ public abstract class CollideShape extends CollisionBody implements CollisionTra
         cx /= getCorners().size();
         cy /= getCorners().size();
         return new Point((int)cx, (int)cy);
+    }
+
+    @Override
+    public void draw(Graphics2D g2d) {
+        for (CollideLine edge : edges) {
+            edge.draw(g2d);
+        }
     }
 }

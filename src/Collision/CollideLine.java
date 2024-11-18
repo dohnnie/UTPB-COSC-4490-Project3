@@ -1,6 +1,6 @@
 package src.Collision;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class CollideLine extends CollisionBody implements CollisionTransform {
@@ -72,5 +72,10 @@ public class CollideLine extends CollisionBody implements CollisionTransform {
     @Override
     public boolean collideConcShape(CollideConcShape l) {
         return doLinesIntersect(this, l.edges);
+    }
+
+    @Override
+    public void draw(Graphics2D g2d) {
+        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
     }
 }

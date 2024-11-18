@@ -1,6 +1,6 @@
 package src.Objects.Projectiles;
 
-import src.Objects.Actors.Pipe;
+import src.Levels.Classic.Pipe;
 import src.Threads.Engine;
 
 import javax.sound.sampled.AudioInputStream;

@@ -1,6 +1,6 @@
 package src.Collision;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class CollideRect extends CollisionBody implements CollisionTransform {
@@ -110,5 +110,12 @@ public class CollideRect extends CollisionBody implements CollisionTransform {
     @Override
     public boolean collideConcShape(CollideConcShape l) {
         return doLinesIntersect(getEdges(), l.edges);
+    }
+
+    @Override
+    public void draw(Graphics2D g2d) {
+        for (CollideLine edge : getEdges()) {
+            edge.draw(g2d);
+        }
     }
 }

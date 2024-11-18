@@ -5,7 +5,7 @@ import javax.sound.sampled.FloatControl;
 
 public abstract class Playable {
     Clip clip;
-    AudioSettings settings;
+    //AudioSettings settings;
 
     public void setVolume(double volume) {
         FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);

@@ -1,13 +1,12 @@
 package src.Threads;
 
+import src.Levels.Level;
 import src.Loader.Loader;
-import src.Objects.Actors.Bird;
-import src.UI.*;
-import src.Objects.Actors.Pipe;
-import src.UI.Menu.*;
-import src.Settings.Settings;
+import src.Levels.Classic.Bird;
+import src.Interface.*;
+import src.Levels.Classic.Pipe;
+import src.Interface.Menu.*;
 
-import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -15,8 +14,6 @@ import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -25,7 +22,7 @@ public class Engine extends RateLimited
     private final DrawLoop canvas;
 
     Loader loader;
-    public UIImage splash;
+    public InterfaceImage splash;
     MainMenu mainMenu;
     OptionsMenu optionsMenu;
     PauseMenu pauseMenu;
@@ -33,16 +30,13 @@ public class Engine extends RateLimited
     LoadMenu loadMenu;
     SaveMenu saveMenu;
     int gameLevel = 1;
+    Level level = null;
 
-    public Bird bird;
     public int mouseX;
     public int mouseY;
     public int fireRate = 10;
     public int fireCounter = 0;
     public boolean firing = false;
-
-    public Pipe[] pipes = new Pipe[5];
-    private int pipeCount = 1;
 
     public int highScore = 0;
     public int score = 0;
@@ -50,24 +44,7 @@ public class Engine extends RateLimited
     public JFrame frame;
     public Toolkit tk;
     public boolean debug = false;
-    public double volume = 0.3;
-    public boolean randomGaps = false;
-    public double difficulty = 0.0;
-    public boolean ramping = false;
     public int engineState = GameStates.PRELOAD;
-
-    private int pipeWidth;
-    private int pipeHeight;
-    public BufferedImage pipeImage;
-    public BufferedImage flippedPipe;
-
-    public BufferedImage[] cloudImage = new BufferedImage[21];
-    private final int cloudCap = 20;
-    public Cloud[] clouds = new Cloud[cloudCap];
-    private int cloudCount = 0;
-    private final double cloudRate = 0.005;
-
-    protected float fog_level = 0.0f;
 
     public Engine()
     {
@@ -109,45 +86,6 @@ public class Engine extends RateLimited
                     highScore = 0;
                 }
             }
-
-            bird = new Bird(this, tk);
-
-            BufferedImage image = ImageIO.read(new File("data/actors/pipe.png"));
-
-            pipeWidth = tk.getScreenSize().width / 16;
-            pipeHeight = (int)(((double)pipeWidth / (double)image.getWidth()) * image.getHeight());
-
-            Image temp = image.getScaledInstance(pipeWidth, pipeHeight, BufferedImage.SCALE_SMOOTH);
-            pipeImage = new BufferedImage(pipeWidth, pipeHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics g = pipeImage.getGraphics();
-            g.drawImage(temp, 0, 0, null);
-            g.dispose();
-
-            AffineTransform at = new AffineTransform();
-            at.rotate(Math.PI, image.getWidth() / 2, image.getHeight() / 2);
-            AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-            BufferedImage flipped = ato.filter(image, null);
-
-            temp = flipped.getScaledInstance(pipeWidth, pipeHeight, BufferedImage.SCALE_SMOOTH);
-            flippedPipe = new BufferedImage(pipeWidth, pipeHeight, BufferedImage.TYPE_INT_ARGB);
-            g = flippedPipe.getGraphics();
-            g.drawImage(temp, 0, 0, null);
-            g.dispose();
-
-            Pipe pipe = new Pipe(this, tk, tk.getScreenSize().height / 2, pipeWidth, pipeHeight);
-            pipes[0] = pipe;
-
-            image = ImageIO.read(new File("data/actors/clouds.png"));
-            int fragHeight = image.getHeight() / 21;
-            for (int i = 0; i < cloudImage.length; i++)
-            {
-                temp = image.getSubimage(0, i * fragHeight, image.getWidth(), fragHeight);
-                cloudImage[i] = new BufferedImage(image.getWidth(), fragHeight, BufferedImage.TYPE_INT_ARGB);
-                g = cloudImage[i].getGraphics();
-                g.drawImage(temp, 0, 0, null);
-                g.dispose();
-            }
-
         } catch (Exception ex) {
             ex.printStackTrace();
             System.exit(0);
@@ -403,6 +341,7 @@ public class Engine extends RateLimited
             switch (engineState) {
                 case GameStates.PRELOAD -> {
                     try {
+                        loader.loadGeneral();
                         splash = loader.loadSplash();
                         engineState = GameStates.LOADING;
                     } catch (Exception ex) {
@@ -414,17 +353,17 @@ public class Engine extends RateLimited
                 case GameStates.LOADING -> {
                     try {
                         System.out.println("Loading main menu graphics...");
-                        loader.loadMenu(mainMenu);
+                        mainMenu.load();
                         System.out.println("Loading options menu graphics...");
-                        loader.loadMenu(optionsMenu);
+                        optionsMenu.load();
                         System.out.println("Loading pause menu graphics...");
-                        loader.loadMenu(pauseMenu);
+                        pauseMenu.load();
                         System.out.println("Loading kill menu graphics...");
-                        loader.loadMenu(killMenu);
+                        killMenu.load();
                         System.out.println("Loading load menu graphics...");
-                        loader.loadMenu(loadMenu);
+                        loadMenu.load();
                         System.out.println("Loading save menu graphics...");
-                        loader.loadMenu(saveMenu);
+                        saveMenu.load();
                         engineState = GameStates.MAIN_MENU;
                     } catch (Exception ex) {
                         System.out.printf("Fatal exception during loading!%n");
@@ -435,25 +374,9 @@ public class Engine extends RateLimited
                 case GameStates.MAIN_MENU -> {}
                 case GameStates.OPTIONS_MENU -> {}
                 case GameStates.RUNNING_CLASSIC -> {
-                    fog_level -= Settings.FOG_STEP;
-                    fog_level = Math.max(fog_level, 0.0f);
-
-                    if (Math.random() < 0.005) {
-                        fog_level = 1.0f;
+                    if (level != null) {
+                        level.update();
                     }
-
-                    fireCounter -= 1;
-                    fireCounter = Math.max(fireCounter, 0);
-                    if (firing && fireCounter == 0)
-                    {
-                        // spawn new bullet and add to bullet array
-                        fireCounter = 10;
-                    }
-                    // for each bullet within drawable space:
-                    //   perform update
-                    //   check for collisions
-                    //   if collide():
-                    //     do something
 
                     if (Math.random() < cloudRate)
                     {

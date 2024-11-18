@@ -1,17 +1,17 @@
 package src.Collision;
 
+import src.Threads.RateLimited;
+import src.Threads.Updateable;
+
 import java.util.ArrayList;
 
-public class Collideable implements Runnable{
+public class Collideable extends RateLimited implements Updateable {
 
-    private final double rateTarget = 100.0;
-    public double waitTime = 1000.0 / rateTarget;
-    public double rate = 1000 / waitTime;
-
-    private ArrayList<CollisionBody> body = new ArrayList<>();
+    protected ArrayList<CollisionBody> body = new ArrayList<>();
     private ArrayList<Collideable> colliders = new ArrayList<>();
 
     public Collideable() {
+        super();
     }
 
     public synchronized ArrayList<CollisionBody> getList() {
@@ -49,7 +49,10 @@ public class Collideable implements Runnable{
     @Override
     public void run() {
         while (true) {
+            long startTime = System.nanoTime();
+            update();
             collide();
+            limit(startTime);
         }
     }
 }

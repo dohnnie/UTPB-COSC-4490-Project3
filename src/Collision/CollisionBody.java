@@ -1,9 +1,9 @@
 package src.Collision;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.ArrayList;
 
-public abstract class CollisionBody {
+public abstract class CollisionBody implements CollisionTransform {
     protected CollideType type;
 
     public abstract boolean collideLine(CollideLine l);
@@ -234,4 +234,6 @@ public abstract class CollisionBody {
     private static double dotProduct(Point p1, Point p2) {
         return p1.x * p2.x + p1.y * p2.y;
     }
+
+    public abstract void draw(Graphics2D g2d);
 }

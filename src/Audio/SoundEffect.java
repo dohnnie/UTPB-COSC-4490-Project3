@@ -1,14 +1,21 @@
 package src.Audio;
 
+import src.Settings.Settings;
+
 import javax.sound.sampled.Clip;
 
 public class SoundEffect extends Playable{
-    public SoundEffect(Clip c, AudioSettings as) {
+    public SoundEffect(Clip c) {
         clip = c;
-        settings = as;
+    }
+
+    public void test() {
+        setVolume(0.0);
+        play();
+        setVolume();
     }
 
     public void setVolume() {
-        super.setVolume(settings.getFxVolume());
+        super.setVolume(Settings.fxVolume);
     }
 }

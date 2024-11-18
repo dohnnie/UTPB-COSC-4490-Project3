@@ -1,9 +1,11 @@
 package src.Collision;
 
+import src.Transformable;
+
 import java.awt.*;
 import java.util.ArrayList;
 
-public interface CollisionTransform {
+public interface CollisionTransform extends Transformable {
 
     ArrayList<CollideLine> getEdges();
     void setEdges(ArrayList<CollideLine> e);
