@@ -5,30 +5,25 @@ import src.Collision.CollideCircle;
 import src.Collision.CollisionBody;
 import src.Drawing.Drawable;
 import src.Drawing.ImageScaler;
+import src.Func;
 import src.Loader.Loader;
 import src.Objects.Actors.Damageable;
+import src.Objects.Actors.Flying;
 import src.Objects.Actors.Player;
-import src.Settings.Settings;
 import src.Threads.Engine;
 import src.Threads.GameStates;
+import src.Threads.Updateable;
 
-import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
-public class Bird extends Player implements Drawable, Damageable
+public class Bird extends Player implements Drawable, Damageable, Flying, Updateable
 {
-    SoundEffect hurt;
-    SoundEffect score;
-    SoundEffect flap;
-
-    private int animRate = 4;
-    private int frameCount = 0;
+    private SoundEffect flapSFX;
+    private SoundEffect hurtSFX;
+	private int frameCount = 0;
 
     public Bird(Engine e, BufferedImage[] flapFrames) {
         super(e);
@@ -40,23 +35,17 @@ public class Bird extends Player implements Drawable, Damageable
         this.addArt("flap", flapFrames);
         this.swapAnim("flap");
         Point center = this.getCenter();
-        this.addBody(new CollideCircle(center, tgtWidth/2));
+        this.addBody(new CollideCircle(center, (double) tgtWidth / 2));
+
+        yAcc = 0.1;
 
         reset();
     }
 
-    public void load() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
-        flap = new SoundEffect(Loader.loadAudio("flap.wav"));
-        hurt = new SoundEffect(Loader.loadAudio("collide.wav"));
-        score = new SoundEffect(Loader.loadAudio("score.wav"));
-    }
-
     @Override
     public void damage(int d) {
-        new Thread (() ->{
-            hurt.setVolume();
-            hurt.play();
-        }).start();
+        hurtSFX.setVolume();
+        hurtSFX.play();
         kill();
     }
 
@@ -68,50 +57,48 @@ public class Bird extends Player implements Drawable, Damageable
     @Override
     public void draw(Graphics2D g2d)
     {
-        this.rotate(Math.tanh(yVel / 8.0 - 0.2));
+        System.out.printf("Frame count: %d  yV: %.2f  yP: %.2f%n", frameCount, yVel, yPos);
+        this.rotate(Func.tanh(yVel / 8.0 - 0.2));
 
         frameCount++;
-        animRate = Math.max((int)(4 + yVel), 1);
+		int animRate = Math.max((int) (4 + yVel), 1);
+        System.out.printf("Rotation: %.2f  Anim rate: %d%n", Func.tanh(yVel / 8.0 - 0.2), animRate);
         if (frameCount % animRate == 0) {
             super.update();
         }
         super.draw(g2d);
-
-        if (engine.debug)
-        {
-            for (CollisionBody cb : body) {
-                cb.draw(g2d);
-            }
-        }
     }
 
     @Override
     public Point getAnchor() {
-        return new Point(xPos, yPos);
+        return new Point((int) xPos, (int) yPos);
     }
 
+    @Override
     public void flap()
     {
         yVel -= 5.0;
-        new Thread (() ->{
-            flap.setVolume();
-            flap.play();
-        }).start();
+        flapSFX.setVolume();
+        flapSFX.play();
     }
 
-    public void score()
-    {
-        new Thread (() ->{
-            score.setVolume();
-            score.play();
-        }).start();
+    @Override
+    public void glide() {}
+
+    @Override
+    public void dive() {}
+
+    @Override
+    public void load() throws Exception {
+        flapSFX = new SoundEffect(Loader.loadAudio(Loader.audioPath + "flap.wav"));
+        hurtSFX = new SoundEffect(Loader.loadAudio(Loader.audioPath + "collide.wav"));
     }
 
     public void reset()
     {
         Toolkit tk = Toolkit.getDefaultToolkit();
-        xPos = tk.getScreenSize().width / 2;
-        yPos = tk.getScreenSize().height / 3;
+        xPos = (double) tk.getScreenSize().width / 2;
+        yPos = (double) tk.getScreenSize().height / 3;
 
         yVel = 0.0;
     }

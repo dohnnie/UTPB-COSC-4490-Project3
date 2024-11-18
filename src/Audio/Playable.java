@@ -13,7 +13,14 @@ public abstract class Playable {
     }
 
     public void play() {
-        clip.setFramePosition(0);
-        clip.start();
+        new Thread(() -> {
+            clip.setFramePosition(0);
+            clip.start();
+        }).start();
+    }
+
+    public void test() {
+        setVolume(0.0);
+        play();
     }
 }

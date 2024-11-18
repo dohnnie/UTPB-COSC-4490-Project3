@@ -11,6 +11,7 @@ import java.util.ArrayList;
 public interface ImageTransform extends Transformable {
 
     BufferedImage getImage();
+    void setImage(BufferedImage img);
 
     Point getCenter();
     void findCenter();
@@ -23,20 +24,20 @@ public interface ImageTransform extends Transformable {
         AffineTransform at = new AffineTransform();
         at.rotate(radians, center.x, center.y);
         AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        ato.filter(getImage(), null);
+        setImage(ato.filter(getImage(), null));
     }
 
     default void move(int dx, int dy) {
         AffineTransform at = new AffineTransform();
         at.translate(dx, dy);
         AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        ato.filter(getImage(), null);
+        setImage(ato.filter(getImage(), null));
     }
 
     default void scale(double factor) {
         AffineTransform at = new AffineTransform();
         at.scale(factor, factor);
         AffineTransformOp ato = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        ato.filter(getImage(), null);
+        setImage(ato.filter(getImage(), null));
     }
 }

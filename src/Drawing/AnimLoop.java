@@ -3,14 +3,17 @@ package src.Drawing;
 import src.Threads.Updateable;
 
 import java.awt.*;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class AnimLoop implements Updateable, Drawable, ImageTransform {
-    private ArrayList<DrawObject> animFrames = new ArrayList<>();
+    private final ArrayList<DrawObject> animFrames = new ArrayList<>();
     private int animFrame = 0;
     private int numFrames = 0;
+    private double rotation = 0.0;
+    private double scale = 1.0;
+    private int dx = 0;
+    private int dy = 0;
 
     public AnimLoop(BufferedImage frame) {
         addFrame(frame);
@@ -38,7 +41,17 @@ public class AnimLoop implements Updateable, Drawable, ImageTransform {
 
     @Override
     public void draw(Graphics2D g2d) {
-        animFrames.get(animFrame).draw(g2d);
+        DrawObject frame = animFrames.get(animFrame);
+        if (rotation != 0.0) {
+            frame.rotate(rotation);
+        }
+        if (dx != 0.0 || dy != 0.0) {
+            frame.move(dx, dy);
+        }
+        if (scale != 1.0) {
+            frame.scale(scale);
+        }
+        frame.draw(g2d);
     }
 
     @Override
@@ -78,23 +91,21 @@ public class AnimLoop implements Updateable, Drawable, ImageTransform {
     }
 
     @Override
+    public void setImage(BufferedImage img) {}
+
+    @Override
     public void rotate(double radians) {
-        for (DrawObject drawObj : animFrames) {
-            drawObj.rotate(radians);
-        }
+        rotation = radians;
     }
 
     @Override
     public void move(int dx, int dy) {
-        for (DrawObject drawObj : animFrames) {
-            drawObj.move(dx, dy);
-        }
+        this.dx = dx;
+        this.dy = dy;
     }
 
     @Override
     public void scale(double factor) {
-        for (DrawObject drawObj : animFrames) {
-            drawObj.scale(factor);
-        }
+        scale = factor;
     }
 }

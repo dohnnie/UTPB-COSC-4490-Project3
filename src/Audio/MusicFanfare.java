@@ -1,15 +1,17 @@
 package src.Audio;
 
+import src.Settings.Settings;
+
 import javax.sound.sampled.Clip;
 
 public class MusicFanfare extends Playable{
 
-    public MusicFanfare(Clip c, AudioSettings as) {
+    public MusicFanfare(Clip c) {
         clip = c;
-        settings = as;
+        test();
     }
 
     public void setVolume() {
-        super.setVolume(settings.getMusicVolume());
+        super.setVolume(Settings.musicVolume);
     }
 }

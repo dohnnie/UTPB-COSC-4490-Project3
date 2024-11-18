@@ -23,7 +23,7 @@ public class MainMenu extends Menu {
         menuItems.add(new MenuText("Credits"));
         menuItems.add(new MenuText("Quit Game"));
 
-        menuItems.get(0).select();
+        menuItems.getFirst().select();
     }
 
     @Override

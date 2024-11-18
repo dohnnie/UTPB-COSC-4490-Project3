@@ -1,11 +1,12 @@
 package src.Objects.Actors;
 
-import src.Audio.SoundEffect;
+import src.Drawing.Drawable;
 import src.Threads.Engine;
+import src.Threads.Updateable;
 
 import java.awt.*;
 
-public abstract class Player extends AnimatedActor {
+public abstract class Player extends AnimatedActor implements Damageable, Drawable, Flying, Updateable {
 
     public Player(Engine e) {
         super(e);
@@ -17,6 +18,8 @@ public abstract class Player extends AnimatedActor {
     public void draw(Graphics2D g2d) {
         super.draw(g2d);
     }
+
+    public abstract void reset();
 
     @Override
     public void update() {

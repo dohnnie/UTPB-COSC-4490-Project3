@@ -44,9 +44,7 @@ public class CollideCircle extends CollisionBody implements CollisionTransform {
     }
 
     @Override
-    public void setEdges(ArrayList<CollideLine> e) {
-
-    }
+    public void setEdges(ArrayList<CollideLine> e) {}
 
     @Override
     public ArrayList<Point> getCorners() {

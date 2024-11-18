@@ -1,6 +1,7 @@
 package src.Levels.Classic;
 
 import src.Objects.Spawner;
+import src.Rand;
 import src.Threads.Engine;
 
 import java.awt.image.BufferedImage;
@@ -23,7 +24,7 @@ public class CloudSpawner extends Spawner {
     public boolean spawnCondition() {
         if (parent.cloudCount < parent.maxClouds)
         {
-            return Math.random() < parent.cloudSpawnChance;
+            return Rand.pct() < parent.cloudSpawnChance;
         }
         return false;
     }
@@ -31,7 +32,13 @@ public class CloudSpawner extends Spawner {
     @Override
     public void spawn() {
         new Thread (() -> {
-
+            if (spawnCondition()) {
+                int cloudNum = Rand.range(21);
+                while (parent.clouds.containsKey(cloudNum)) {
+                    cloudNum = Rand.range(21);
+                }
+                parent.addCloud(cloudNum, new Cloud(parent, clouds[cloudNum], cloudNum));
+            }
         }).start();
     }
 }

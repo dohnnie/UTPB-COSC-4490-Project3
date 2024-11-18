@@ -1,5 +1,7 @@
 package src.Audio;
 
+import src.Settings.Settings;
+
 import javax.sound.sampled.Clip;
 
 public class MusicLoop extends Playable{
@@ -7,15 +9,14 @@ public class MusicLoop extends Playable{
     int loopEndFrame;
     private double fadeSeconds = 3.0;
 
-    public MusicLoop(Clip c, AudioSettings as, int ls, int le) {
+    public MusicLoop(Clip c, int ls, int le) {
         clip = c;
-        settings = as;
         loopStartFrame = ls;
         loopEndFrame = le;
     }
 
     public void setVolume() {
-        super.setVolume(settings.getMusicVolume());
+        super.setVolume(Settings.musicVolume);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class MusicLoop extends Playable{
                     // Fade out over 3 seconds
                     for (int i = (int) (100 * fadeSeconds); i >= 0; i--) {
                         double volume = i / 100.0 * fadeSeconds; // From 1.0 to 0.0
-                        setVolume(volume * settings.getMusicVolume());
+                        setVolume(volume * Settings.musicVolume);
 
                         try {
                             Thread.sleep(10);

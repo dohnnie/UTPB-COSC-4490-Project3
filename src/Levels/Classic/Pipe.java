@@ -1,17 +1,18 @@
 package src.Levels.Classic;
 
+import src.Collision.CollideRect;
+import src.Drawing.Drawable;
+import src.Func;
+import src.Objects.Actors.Obstacle;
+import src.Rand;
 import src.Threads.Engine;
+import src.Threads.Updateable;
 
 import java.awt.*;
 
-public class Pipe
-{
-    Engine engine;
-
-    private Toolkit tk;
-
-    public int yPos;
-    public int xPos;
+public class Pipe extends Obstacle implements Drawable, Updateable {
+    final ClassicMode parent;
+    final Toolkit tk;
 
     public double defaultVel = 3.0;
     public double xVel = 3.0;
@@ -21,44 +22,60 @@ public class Pipe
     public int gap;
 
     private boolean scoreable = true;
-    public boolean spawnable = true;
+    private final int index;
 
-    public Pipe(Engine e, Toolkit tk, int y, int w, int h)
+    public Pipe(Engine e, ClassicMode p, int idx)
     {
-        engine = e;
-        this.tk = tk;
+        super(e);
+        parent = p;
+        index = idx;
+        tk = Toolkit.getDefaultToolkit();
 
         xPos = tk.getScreenSize().width;
 
-        width = w;
-        height = h;
-        if (e.randomGaps) {
-            int range = tk.getScreenSize().height / 3;
-            gap = tk.getScreenSize().height / 6 + (int) (Math.random() * range);
-        } else {
-            gap = tk.getScreenSize().height / 3;
-        }
+        int min = tk.getScreenSize().height / 4;
+        int y = Rand.range(min, min*2);
+
+        width = p.pipeWidth;
+        height = p.pipeHeight;
+
+        int range = tk.getScreenSize().height / 6;
+        gap = Rand.range(range, range*2);
 
         yPos = y + gap / 2;
+
+        this.addBody(new CollideRect(new Point(xPos, yPos), width, height));
+        this.addBody(new CollideRect(new Point(xPos, yPos - gap - height), width, height));
     }
 
-    public void drawPipe(Graphics g)
+    @Override
+    public void draw(Graphics2D g2d)
     {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(engine.pipeImage, xPos, yPos, null);
-        g2d.drawImage(engine.flippedPipe, xPos, yPos - gap - height, null);
+        g2d.drawImage(parent.pipeImage, xPos, yPos, null);
+        g2d.drawImage(parent.pipeFlipped, xPos, yPos - gap - height, null);
+        super.draw(g2d);
     }
 
-    public boolean update()
+    @Override
+    public Point getAnchor()
     {
-        xVel = defaultVel + engine.difficulty;
-        xPos -= xVel;
+        return new Point(xPos, yPos);
+    }
+
+    @Override
+    public void update()
+    {
+        xVel = defaultVel + defaultVel * Func.tanh((double) parent.score / 10);
+        xPos -= (int) xVel;
 
         if (scoreable && xPos < tk.getScreenSize().width / 2)
         {
             scoreable = false;
-            return true;
+            parent.score();
         }
-        return false;
+
+        if (xPos < -width) {
+            parent.killPipe(index);
+        }
     }
 }

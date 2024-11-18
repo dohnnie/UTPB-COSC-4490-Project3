@@ -1,27 +1,19 @@
 package src.Threads;
 
+import src.Levels.Classic.ClassicMode;
 import src.Levels.Level;
 import src.Loader.Loader;
-import src.Levels.Classic.Bird;
 import src.Interface.*;
-import src.Levels.Classic.Pipe;
 import src.Interface.Menu.*;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.*;
 
 public class Engine extends RateLimited
 {
-    private final DrawLoop canvas;
+    //private final DrawLoop canvas;
 
-    Loader loader;
     public InterfaceImage splash;
     MainMenu mainMenu;
     OptionsMenu optionsMenu;
@@ -38,13 +30,12 @@ public class Engine extends RateLimited
     public int fireCounter = 0;
     public boolean firing = false;
 
-    public int highScore = 0;
-    public int score = 0;
-
     public JFrame frame;
     public Toolkit tk;
-    public boolean debug = false;
+    public boolean debug = true;
     public int engineState = GameStates.PRELOAD;
+
+    public int updateCounter = 0;
 
     public Engine()
     {
@@ -62,7 +53,6 @@ public class Engine extends RateLimited
         frame.setVisible(true);
         frame.requestFocus();
 
-        loader = new Loader();
         mainMenu = new MainMenu(this);
         optionsMenu = new OptionsMenu(this);
         loadMenu = new LoadMenu(this);
@@ -70,30 +60,9 @@ public class Engine extends RateLimited
         pauseMenu = new PauseMenu(this);
         killMenu = new GameOverMenu(this);
 
-        try {
-            File scoreFile = new File("score.txt");
-            if(!scoreFile.exists())
-            {
-                highScore = 0;
-            } else {
-                try {
-                    FileReader fr = new FileReader(scoreFile);
-                    BufferedReader br = new BufferedReader(fr);
-                    highScore = Integer.parseInt(br.readLine());
-                    br.close();
-                    fr.close();
-                } catch (Exception ex) {
-                    highScore = 0;
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.exit(0);
-        }
-
         engineState = GameStates.PRELOAD;
 
-        canvas = new DrawLoop(this, frame.getGraphics(), tk);
+        DrawLoop canvas = new DrawLoop(this, frame.getGraphics(), tk);
         frame.add(canvas.getPanel());
 
         Thread drawLoop = new Thread(canvas);
@@ -113,7 +82,7 @@ public class Engine extends RateLimited
                 {
                     switch (engineState) {
                         case GameStates.RUNNING_CLASSIC -> {
-                            bird.flap();
+                            level.player.flap();
                         }
                     }
                 }
@@ -337,12 +306,13 @@ public class Engine extends RateLimited
         while(true)
         {
             long startTime = System.nanoTime();
+            updateCounter += 1;
 
             switch (engineState) {
                 case GameStates.PRELOAD -> {
                     try {
-                        loader.loadGeneral();
-                        splash = loader.loadSplash();
+                        Loader.loadGeneral();
+                        splash = Loader.loadSplash();
                         engineState = GameStates.LOADING;
                     } catch (Exception ex) {
                         System.out.printf("Fatal exception when loading splash screen!%n");
@@ -377,84 +347,6 @@ public class Engine extends RateLimited
                     if (level != null) {
                         level.update();
                     }
-
-                    if (Math.random() < cloudRate)
-                    {
-                        cloudCount++;
-                        if (cloudCount >= clouds.length)
-                            cloudCount = 0;
-                        if (clouds[cloudCount] == null || clouds[cloudCount].passed)
-                        {
-                            Cloud c = new Cloud(this, tk);
-                            clouds[cloudCount] = c;
-                        }
-                    }
-                    for (int i = 0; i < clouds.length; i++)
-                    {
-                        if(clouds[i] != null)
-                            clouds[i].update();
-                    }
-
-                    bird.update();
-                    for (int i = 0; i < pipes.length; i++) {
-                        if (pipes[i] == null)
-                            continue;
-
-                        if (pipes[i].update()) {
-                            score += 1;
-
-                            if (ramping && score % 10 == 0)
-                            {
-                                difficulty += 0.5;
-                                difficulty = Math.min(difficulty, 3.0);
-                            }
-
-                            if (score > highScore)
-                            {
-                                new Thread(() -> {
-                                    highScore = score;
-
-                                    try {
-                                        File scoreFile = new File("score.txt");
-                                        PrintWriter pw = new PrintWriter(scoreFile);
-                                        pw.write(String.format("%d%n", highScore));
-                                        pw.close();
-                                    } catch (Exception ex) {
-                                        ex.printStackTrace();
-                                    }
-                                }).start();
-                            }
-
-                            new Thread(() -> {
-                                try {
-                                    AudioInputStream ais = AudioSystem.getAudioInputStream(new File("data/audio/score.wav").getAbsoluteFile());
-                                    Clip clip = AudioSystem.getClip();
-                                    clip.open(ais);
-                                    FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                                    gain.setValue(20f * (float) Math.log10(volume));
-                                    clip.start();
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                            }).start();
-                        }
-
-                        if (pipes[i].spawnable && pipes[i].xPos < 3 * tk.getScreenSize().width / 4) {
-                            pipes[i].spawnable = false;
-                            int min = tk.getScreenSize().height / 4;
-                            int range = min * 2;
-                            int y = (int) (Math.random() * range) + min;
-                            Pipe pipe = new Pipe(this, tk, y, pipeWidth, pipeHeight);
-                            pipes[pipeCount] = pipe;
-                            pipeCount++;
-                            if (pipeCount >= pipes.length)
-                                pipeCount = 0;
-                        }
-
-                        if (bird.collide(pipes[i])) {
-                            engineState = GameStates.GAME_OVER;
-                        }
-                    }
                 }
                 case GameStates.RUNNING_NORMAL -> {
                 }
@@ -478,34 +370,21 @@ public class Engine extends RateLimited
     }
 
     public void loadClassic() {
+        engineState = GameStates.LOADING_CLASSIC;
+        level = new ClassicMode(this);
+        try {
+            level.loadArt();
+            engineState = GameStates.RUNNING_CLASSIC;
+            updateCounter = 0;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(0);
+        }
     }
 
     public void reset()
     {
-        if (score > highScore)
-        {
-            highScore = score;
-            //running = true;
-            try {
-                File scoreFile = new File("score.txt");
-                PrintWriter pw = new PrintWriter(scoreFile);
-                pw.write(String.format("%d%n", highScore));
-                pw.close();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        bird.reset();
-        pipes = new Pipe[5];
-        Pipe p = new Pipe(this, tk, tk.getScreenSize().height / 2, pipeWidth, pipeHeight);
-        pipes[0] = p;
-        pipeCount = 1;
-        score = 0;
-
-        clouds = new Cloud[cloudCap];
-        cloudCount = 0;
-
-        //engineState = 0;
+        updateCounter = 0;
+        level.reset();
     }
 }

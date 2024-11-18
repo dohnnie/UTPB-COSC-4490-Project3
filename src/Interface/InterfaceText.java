@@ -15,9 +15,7 @@ public class InterfaceText implements InterfaceDrawable {
 	public int fontSize = 10;
 	public int offset = 10;
 
-	public InterfaceText() {
-
-	}
+	public InterfaceText() {}
 
 	public InterfaceText(String t) {
 		setText(t);

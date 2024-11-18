@@ -1,12 +1,16 @@
 package src.Levels.Classic;
 
 import src.Drawing.Drawable;
+import src.Rand;
 import src.Threads.Engine;
+import src.Threads.Updateable;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class Cloud implements Drawable {
+public class Cloud implements Drawable, Updateable
+{
+    ClassicMode parent;
     Toolkit tk;
 
     public int yPos;
@@ -18,54 +22,45 @@ public class Cloud implements Drawable {
     public int height;
 
     public BufferedImage image;
-    public boolean passed;
     public int index;
 
-    public Cloud(Engine e, Toolkit tk) {
-        this.tk = tk;
+    public Cloud(ClassicMode p, BufferedImage img, int idx) {
+        tk = Toolkit.getDefaultToolkit();
+        parent = p;
+        index = idx;
 
-        index = (int) (Math.random() * e.clouds.length);
-        boolean duplicate = true;
-        while(duplicate)
-        {
-            duplicate = false;
-            for (int i = 0; i < e.clouds.length; i++)
-            {
-                if (e.clouds[i] != null && !e.clouds[i].passed && e.clouds[i].index == index)
-                {
-                    duplicate = true;
-                    break;
-                }
-            }
-            if (duplicate)
-                index = (int) (Math.random() * e.clouds.length);
-        }
-
-        int r = (int) (Math.random() * 3.0) + 3;
+        int r = Rand.range(3,6);
         width = tk.getScreenSize().width / r;
-        height = (int)(((double)width / (double)e.cloudImage[index].getWidth()) * (e.cloudImage[index].getHeight()));
+        height = (int)(((double)width / (double)img.getWidth()) * (img.getHeight()));
 
-        Image temp = e.cloudImage[index].getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH);
+        Image temp = img.getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH);
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics x = image.getGraphics();
         x.drawImage(temp, 0, 0, null);
         x.dispose();
 
         xPos = tk.getScreenSize().width + 10;
-        yPos = (int) (Math.random() * (4 * tk.getScreenSize().height / 5));
+        yPos = Rand.range(4 * tk.getScreenSize().height / 5);
 
-        xVel = (Math.random() * 0.2 + 0.2) * 5.0;
+        xVel = Rand.interval(1.0, 2.0);
     }
 
-    public void drawCloud(Graphics g)
+    @Override
+    public void draw(Graphics2D g2d)
     {
-        g.drawImage(image, xPos, yPos, null);
+        g2d.drawImage(image, xPos, yPos, null);
+    }
+
+    @Override
+    public Point getAnchor()
+    {
+        return new Point(xPos, yPos);
     }
 
     public void update()
     {
         xPos -= xVel;
         if (xPos + width < -tk.getScreenSize().width / 2)
-            passed = true;
+            parent.killCloud(index);
     }
 }

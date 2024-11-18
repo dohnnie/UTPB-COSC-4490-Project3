@@ -1,8 +1,8 @@
 package src.Objects.Actors;
 
 import src.Collision.Collideable;
+import src.Collision.CollisionBody;
 import src.Drawing.AnimLoop;
-import src.Drawing.DrawObject;
 import src.Threads.Engine;
 import src.Threads.Updateable;
 import src.Transformable;
@@ -15,11 +15,11 @@ public class AnimatedActor extends Collideable implements Updateable, Transforma
     public Engine engine;
     public Toolkit tk;
 
-    public int yPos;
+    public double yPos;
     public double yVel = 0.0;
     public double yAcc = 0.0;
 
-    public int xPos;
+    public double xPos;
     public double xVel = 0.0;
     public double xAcc = 0.0;
 
@@ -29,6 +29,7 @@ public class AnimatedActor extends Collideable implements Updateable, Transforma
     private String currAnim = "";
 
     public AnimatedActor(Engine e) {
+        super(false);
         engine = e;
         tk = Toolkit.getDefaultToolkit();
     }
@@ -56,6 +57,9 @@ public class AnimatedActor extends Collideable implements Updateable, Transforma
     @Override
     public void update() {
         animLoops.get(animGraph.get(currAnim)).update();
+        for (AnimLoop al : animLoops.values()) {
+            al.setAnchor((int) xPos, (int) yPos);
+        }
     }
 
     @Override
@@ -80,5 +84,12 @@ public class AnimatedActor extends Collideable implements Updateable, Transforma
 
     public void draw(Graphics2D g2d) {
         animLoops.get(animGraph.get(currAnim)).draw(g2d);
+
+        if (engine.debug)
+        {
+            for (CollisionBody cb : body) {
+                cb.draw(g2d);
+            }
+        }
     }
 }

@@ -66,22 +66,6 @@ public class Bullet {
 
     private void collide()
     {
-        new Thread(() ->
-        {
-            try
-            {
-                AudioInputStream ais = AudioSystem.getAudioInputStream(new File("data/audio/collide.wav").getAbsoluteFile());
-                Clip clip = AudioSystem.getClip();
-                clip.open(ais);
-                FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                gain.setValue(20f * (float) Math.log10(engine.volume));
-                clip.start();
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }).start();
     }
 
     public void update()

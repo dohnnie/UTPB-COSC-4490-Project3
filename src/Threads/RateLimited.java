@@ -6,7 +6,7 @@ public abstract class RateLimited implements Runnable{
 
     private final double rateTarget;
     private final double waitTime;
-    private double rate;
+    double rate;
 
     public RateLimited() {
         rateTarget = Settings.UPDATERATE;

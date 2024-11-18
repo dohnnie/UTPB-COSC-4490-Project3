@@ -7,12 +7,7 @@ import javax.sound.sampled.Clip;
 public class SoundEffect extends Playable{
     public SoundEffect(Clip c) {
         clip = c;
-    }
-
-    public void test() {
-        setVolume(0.0);
-        play();
-        setVolume();
+        test();
     }
 
     public void setVolume() {

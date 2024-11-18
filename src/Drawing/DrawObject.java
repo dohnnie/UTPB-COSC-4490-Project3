@@ -4,12 +4,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class DrawObject implements ImageTransform, Drawable {
-    private final BufferedImage image;
+    private BufferedImage image;
     private Point anchor;
     private Point center;
 
     public DrawObject(BufferedImage bi) {
         image = bi;
+        setAnchor(0, 0);
+        findCenter();
     }
 
     @Override
@@ -18,7 +20,15 @@ public class DrawObject implements ImageTransform, Drawable {
     }
 
     @Override
+    public void setImage(BufferedImage img) {
+        image = img;
+    }
+
+    @Override
     public Point getCenter() {
+        if (center == null) {
+            findCenter();
+        }
         return center;
     }
 

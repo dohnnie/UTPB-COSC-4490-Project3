@@ -1,5 +1,5 @@
 package src.Drawing.WorldLayer;
-
+/*
 import src.Collision.CollideRect;
 import src.Drawing.ImageParallax;
 import src.Drawing.ImageTransform;
@@ -45,6 +45,30 @@ public class FarBackground implements ImageParallax, ImageTransform, ZBuffered {
     }
 
     @Override
+    public void findCenter()
+    {
+
+    }
+
+    @Override
+    public void setCenter(int x, int y)
+    {
+
+    }
+
+    @Override
+    public Point getAnchor()
+    {
+        return null;
+    }
+
+    @Override
+    public void setAnchor(int x, int y)
+    {
+
+    }
+
+    @Override
     public boolean isTransparent() {
         return false;
     }
@@ -58,4 +82,4 @@ public class FarBackground implements ImageParallax, ImageTransform, ZBuffered {
     public CollideRect getBoundingRect() {
         return null;
     }
-}
+}*/

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import src.Audio.MusicFanfare;
 import src.Audio.MusicLoop;
+import src.Drawing.Drawable;
 import src.Drawing.WorldLayer.Layer;
 import src.Objects.Activators.Activator;
 import src.Objects.Actors.Player;
@@ -12,13 +13,13 @@ import src.Objects.Spawner;
 import src.Objects.WorldFloor;
 import src.Threads.Updateable;
 
-public abstract class Level implements Updateable {
+public abstract class Level implements Drawable, Updateable {
     protected MusicLoop looped;
     protected MusicFanfare endLevel;
     protected MusicFanfare bossEntry;
     protected MusicFanfare bossVictory;
 
-    protected Player player;
+    public Player player;
 
     ArrayList<Layer> worldArt = new ArrayList<>();
     WorldFloor floor;
@@ -34,6 +35,8 @@ public abstract class Level implements Updateable {
     public void saveToFile(String fileName) {}
 
     public abstract void loadArt() throws Exception;
+
+    public abstract void reset();
 
     public abstract void update();
 }

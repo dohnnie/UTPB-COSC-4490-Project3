@@ -9,9 +9,11 @@ public class Collideable extends RateLimited implements Updateable {
 
     protected ArrayList<CollisionBody> body = new ArrayList<>();
     private ArrayList<Collideable> colliders = new ArrayList<>();
+    private boolean inverse = false;
 
-    public Collideable() {
+    public Collideable(boolean inv) {
         super();
+        inverse = inv;
     }
 
     public synchronized ArrayList<CollisionBody> getList() {
@@ -38,12 +40,12 @@ public class Collideable extends RateLimited implements Updateable {
             for (CollisionBody b1 : body) {
                 for (CollisionBody b2: c.body) {
                     if (b1.collide(b2)) {
-                        return true;
+                        return !inverse;
                     }
                 }
             }
         }
-        return false;
+        return inverse;
     }
 
     @Override
