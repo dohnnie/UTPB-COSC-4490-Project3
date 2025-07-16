@@ -6,19 +6,19 @@ import java.awt.image.*;
 import java.io.*;
 import javax.imageio.ImageIO;
 
-
+//Note: All sprites are 100x100 in size
 public class Sprite {
     public final float GRAVITY = 0.6f;
 
-    BufferedImage playerImage;
+    BufferedImage image;
     public BoxCollider box;
     public float xVel, yVel;
 
     public Sprite(String imageFile, Point origin, int w, int h) throws IOException {
         box = new BoxCollider(origin.x, origin.y, w, h);
 
-        playerImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics x = playerImage.getGraphics();
+        image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics x = image.getGraphics();
         BufferedImage rawImage = ImageIO.read(new FileInputStream(imageFile));
         Image tempImage = rawImage.getScaledInstance(box.width, box.height, Image.SCALE_SMOOTH);
         x.drawImage(tempImage, 0, 0, null);
@@ -32,17 +32,11 @@ public class Sprite {
     }
 
     public void draw(Graphics g) {
-        g.drawImage(playerImage, (int)box.centerX - (box.width / 2), (int)box.centerY - (box.height / 2), null);
+        g.drawImage(image, (int)box.centerX - (box.width / 2), (int)box.centerY - (box.height / 2), null);
     }
 
     public void moveHorizontal() {
         box.centerX += xVel;
-    }
-
-    //Debug method
-    public void dMoveLeft() {
-        xVel -= 0.1f;
-        moveHorizontal();
     }
 
     public void reset() {

@@ -1,6 +1,7 @@
 package src;
 
 import Collision.BoxCollider;
+import Enums.GameStates;
 import GameObjects.*;
 import LevelEditor.*;
 import java.awt.*;
@@ -17,6 +18,8 @@ public class Game implements Runnable
     public Toolkit tk;
     private final GameCanvas canvas;
     public final int SPRITE_SIZE = 100;
+    private int bottomBoundary;
+    private int boundaryGrace = 45;
 
     //Player movement clamps and flags
     public Player player;
@@ -32,13 +35,13 @@ public class Game implements Runnable
     public double rate = 1000 / waitTime;
 
     //Array objects needed to load level data
+    public Sprite winFlag;
     public ArrayList<Sprite> platforms;
     public ArrayList<Enemy> enemies;
 
     //Misc.
     public boolean debug = false;
-    public boolean running = true;
-    public boolean isGameOver = false;
+    public GameStates state = GameStates.Loading;
     public double volume = 0.3;
 
     public Game()
@@ -53,6 +56,7 @@ public class Game implements Runnable
         //Gets Screen Size
         tk = Toolkit.getDefaultToolkit();
         System.out.println("Screen Width: " + tk.getScreenSize().width + ", Screen Height: " + tk.getScreenSize().height);
+        bottomBoundary = tk.getScreenSize().height;
 
         frame.setVisible(true);
         frame.requestFocus();
@@ -63,22 +67,27 @@ public class Game implements Runnable
 
         //Starts loading file data into necessary arrays
         try {
+            if(state == GameStates.Loading) {
             platforms = new ArrayList<>();
             enemies = new ArrayList<>();
 
 
             //I have to do a funky workaround for pass by reference when loading player data
             Player[] playerRef = new Player[1];
-            LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef);
+            Sprite[] objRef = new Sprite[1];
+            LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef, objRef);
 
             //LevelLoader.createLevel(tileGrid, SPRITE_SIZE, platforms, enemies, playerRef);
+            winFlag = objRef[0];
             player = playerRef[0];
+            state = GameStates.Running;
 
             //Debug print statements
             System.out.println("Platform Amount: " + platforms.size());
             System.out.println("Enemies Amount: " + enemies.size());
             System.out.println("Player Center X: " + player.box.centerX + ", Player Center Y: " + player.box.centerY);
             System.out.println("Player Top: " + player.box.getTop() + ", Player Bottom: " + player.box.getBottom() + ", Player Left: " + player.box.getLeft() + ", Player Right: " + player.box.getRight());
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error reading file");
@@ -103,29 +112,32 @@ public class Game implements Runnable
             {
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_SPACE -> {
-                        if(running) {
+                        if(state == GameStates.Running) {
                             if(BoxCollider.isOnPlatforms(player, platforms)) {
                                 player.yVel -= JUMP_SPEED;
                             }
                         }
                     }
                     case KeyEvent.VK_ESCAPE -> {
-                        running = !running;
+                        switch(state) {
+                            case GameStates.Running -> {state = GameStates.Pause; }
+                            case GameStates.Pause -> { state = GameStates.Running; }
+                        }
                     }
                     case KeyEvent.VK_UP -> {
-                        if(!running) {
+                        if(state == GameStates.Pause) {
                             canvas.cursor--;
                             canvas.cursor = Math.max(canvas.cursor, 0);
                         }
                     }
                     case KeyEvent.VK_DOWN -> {
-                        if(!running) {
+                        if(state == GameStates.Pause) {
                             canvas.cursor++;
-                            canvas.cursor = Math.min(canvas.cursor, 6);
+                            canvas.cursor = Math.min(canvas.cursor, 4);
                         }
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        if(!running) {
+                        if(state == GameStates.Pause) {
                             if(canvas.cursor == 2) {
                                 volume += 0.1;
                                 volume = Math.min(volume, 1.0);
@@ -133,7 +145,7 @@ public class Game implements Runnable
                         }
                     }
                     case KeyEvent.VK_LEFT -> {
-                        if(!running) {
+                        if(state == GameStates.Pause) {
                             if(canvas.cursor == 2) {
                                 volume -= 0.1;
                                 volume = Math.max(volume, 0.0);
@@ -141,11 +153,11 @@ public class Game implements Runnable
                         }
                     }
                     case KeyEvent.VK_ENTER -> {
-                        if(!running) {
+                        if(state == GameStates.Pause) {
                             switch(canvas.cursor) {
                                 case 0 -> { reset(); }
                                 case 1 -> { System.exit(0); }
-                                case 6 -> { debug = !debug; }
+                                case 3 -> { debug = !debug; }
                             }
                         }
                     }
@@ -197,7 +209,7 @@ public class Game implements Runnable
         {
             long startTime = System.nanoTime();
 
-            if (running)
+            if (state == GameStates.Running)
             {
                 if(goLeft) {
                     player.xVel -= 0.1f;
@@ -209,13 +221,29 @@ public class Game implements Runnable
                     player.moveHorizontal();
                 }
 
-                //player.dMoveLeft();
-
                 //Checks for collisions and resolves them
                 BoxCollider.resolvePlatformCollisions(player, platforms);
-                for(Sprite enemy : enemies) {
+                for(Enemy enemy : enemies) {
                     enemy.update();
                     BoxCollider.resolvePlatformCollisions(enemy, platforms);
+                    boolean enemyCollision = BoxCollider.checkCollision(player, enemy);
+                    if(!debug) {
+                    if(enemyCollision) {
+                        System.out.println("You died!");
+                        state = GameStates.Pause;
+                    }
+                }
+                }
+
+                boolean outOfBounds = player.box.getBottom() > bottomBoundary + boundaryGrace;
+                if(outOfBounds) {
+                    System.out.println("Out of Bounds!");
+                    state = GameStates.Pause;
+                }
+
+                if(BoxCollider.checkCollision(player, winFlag)) {
+                    System.out.println("You win!");
+                    state = GameStates.Win;
                 }
             }
 
@@ -234,7 +262,13 @@ public class Game implements Runnable
 
     public void reset()
     {
-        running = true;
+        player.box.centerX = (float) player.box.origin.x + (player.box.width / 2);
+        player.box.centerY = (float) player.box.origin.y + (player.box.height / 2);
+        for(Enemy enemy : enemies) {
+            enemy.box.centerX = (float)enemy.box.origin.x + (enemy.box.width / 2);
+            enemy.box.centerY = (float)enemy.box.origin.y + (enemy.box.height / 2);
+        }
+        state = GameStates.Running;
     }
 
     public static void main(String[] args)

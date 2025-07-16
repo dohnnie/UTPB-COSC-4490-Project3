@@ -1,5 +1,6 @@
 package src;
 
+import Enums.GameStates;
 import GameObjects.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -71,6 +72,7 @@ public class GameCanvas extends JPanel implements Runnable
             g2d.translate(-viewOrigin.x, -viewOrigin.y);
 
             game.player.draw(g2d);
+            game.winFlag.draw(g2d);
             for (Sprite platform : game.platforms) {
                 platform.draw(g2d);
             }
@@ -79,11 +81,10 @@ public class GameCanvas extends JPanel implements Runnable
             }
 
             g2d.setColor(Color.BLACK);
-            if (!game.isGameOver) {
-                if (game.running) {
+                if (game.state == GameStates.Running) {
                     //g2d.drawString(String.format("Score: %d", game.score), 25, 25);
                     //g2d.drawString(String.format("High Score: %d", game.highScore), 25, 50);
-                } else {
+                } else if(game.state == GameStates.Pause){
                     g2d.drawString(String.format("%s Reset Game", cursor == 0 ? ">" : " "), viewOrigin.x + 25, viewOrigin.y + 25);
                     g2d.drawString(String.format("%s Exit Game", cursor == 1 ? ">" : " "), viewOrigin.x + 25, viewOrigin.y + 50);
                     String vol = "";
@@ -121,7 +122,6 @@ public class GameCanvas extends JPanel implements Runnable
                     ex.printStackTrace();
                     System.exit(0);
                 }
-            }
         }
     }
 }

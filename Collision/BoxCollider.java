@@ -1,19 +1,21 @@
 package Collision;
 
 import GameObjects.Sprite;
-
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.util.ArrayList;
 
 public class BoxCollider {
     public float centerX, centerY;
     public int width, height;
+    public Point origin;
 
     public BoxCollider(int x, int y, int width, int height) {
         this.width = width;
         this.height = height;
 
+        origin = new Point(x, y);
         centerX = x + (float)(width / 2);
         centerY = y + (float)(height / 2);
     }
