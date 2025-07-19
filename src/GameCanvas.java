@@ -72,12 +72,17 @@ public class GameCanvas extends JPanel implements Runnable
             g2d.translate(-viewOrigin.x, -viewOrigin.y);
 
             game.player.draw(g2d);
+            if(game.player.fb != null && game.player.fb.isActive) {
+                game.player.fb.draw(g2d);
+            }
             game.winFlag.draw(g2d);
             for (Sprite platform : game.platforms) {
                 platform.draw(g2d);
             }
-            for (Sprite enemy : game.enemies) {
-                enemy.draw(g2d);
+            for (Enemy enemy : game.enemies) {
+                if(enemy.isAlive) {
+                    enemy.draw(g2d);
+                }
             }
 
             g2d.setColor(Color.BLACK);
@@ -101,13 +106,16 @@ public class GameCanvas extends JPanel implements Runnable
                 if (game.debug) {
                     g2d.drawString(String.format("FPS = %.1f", rate), viewOrigin.x + 200, viewOrigin.y + 25);
                     g2d.drawString(String.format("UPS = %.1f", game.rate), viewOrigin.x + 200, viewOrigin.y + 50);
-                    g2d.drawString("Lives: " + game.player.hitpoints, viewOrigin.x + 200, viewOrigin.y + 75);
+                    //g2d.drawString("Lives: " + game.player.hitpoints, viewOrigin.x + 200, viewOrigin.y + 75);
                     game.player.box.drawBox(g2d);
                     for (Sprite enemy : game.enemies) {
                         enemy.box.drawBox(g2d);
                     }
                     for (Sprite platform : game.platforms) {
                         platform.box.drawBox(g2d);
+                    }
+                    if(game.player.fb != null) {
+                        game.player.fb.box.drawBox(g2d);
                     }
                 }
 

@@ -11,6 +11,8 @@ public class BoxCollider {
     public int width, height;
     public Point origin;
 
+    private static float buffer = 5;
+
     public BoxCollider(int x, int y, int width, int height) {
         this.width = width;
         this.height = height;
@@ -96,7 +98,7 @@ public class BoxCollider {
      */
     public static void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls) {
         s.yVel += s.GRAVITY;
-        
+
         //Vertical collision checks
         s.box.centerY += s.yVel;
         ArrayList<Sprite> colList = BoxCollider.checkCollisionList(s, walls);
@@ -109,7 +111,6 @@ public class BoxCollider {
             }
             s.yVel = 0;
         }
-
         
         //Horizontal collision check
         s.box.centerX += s.xVel;

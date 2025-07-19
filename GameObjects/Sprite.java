@@ -35,13 +35,11 @@ public class Sprite {
         g.drawImage(image, (int)box.centerX - (box.width / 2), (int)box.centerY - (box.height / 2), null);
     }
 
-    public void moveHorizontal() {
-        box.centerX += xVel;
-    }
-
     public void reset() {
         xVel = 0;
         yVel = 0;
+        box.centerX = (float) box.origin.x + (box.width / 2);
+        box.centerY = (float) box.origin.y + (box.height / 2);
     }
 
     public void update() {

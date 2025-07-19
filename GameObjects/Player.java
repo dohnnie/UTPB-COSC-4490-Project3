@@ -1,18 +1,21 @@
 package GameObjects;
 
 import Enums.Directions;
-
+import Projectiles.Fireball;
 import java.awt.*;
 import java.io.IOException;
 
 public class Player extends Sprite{
-    public int hitpoints;
-    private Directions direction;
+    public Directions direction;
+    public Fireball fb;
+
+    public boolean firing;
+    public int projCount = 1;
 
     public Player(String imageFile, Point origin) throws IOException {
         super(imageFile, origin);
 
-        hitpoints = 3;
+        firing = false;
         direction = Directions.RIGHT;
     }
 
@@ -21,5 +24,38 @@ public class Player extends Sprite{
             direction = Directions.RIGHT;
         else if(xVel < 0)
             direction = Directions.LEFT;
+    }
+
+    public void moveHorizontal() {
+        box.centerX += xVel;
+    }
+
+    @Override
+    public void update() {
+
+        if(firing && projCount > 0) {
+            System.out.println("Firing in player");
+            try {
+                int fbWidth = 50;
+                int fbHeight = 50;
+                int drawX = (int)box.centerX - (fbWidth / 2);
+                int drawY = (int)box.centerY - (fbHeight / 2);
+                fb = new Fireball("./data/Mario.png", new Point(drawX, drawY), fbWidth, fbHeight, this);
+                fb.isActive = true;
+            } catch (IOException e) {
+                System.out.println("Failed in creating a fireball");
+                e.printStackTrace();
+            }
+            projCount--;
+        }
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+
+        fb.isActive = false;
+        firing = false;
+        direction = Directions.RIGHT;
     }
 }

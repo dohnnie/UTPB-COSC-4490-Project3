@@ -1,6 +1,7 @@
 package src;
 
 import Collision.BoxCollider;
+import Enums.Directions;
 import Enums.GameStates;
 import GameObjects.*;
 import LevelEditor.*;
@@ -77,7 +78,6 @@ public class Game implements Runnable
             Sprite[] objRef = new Sprite[1];
             LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef, objRef);
 
-            //LevelLoader.createLevel(tileGrid, SPRITE_SIZE, platforms, enemies, playerRef);
             winFlag = objRef[0];
             player = playerRef[0];
             state = GameStates.Running;
@@ -86,7 +86,6 @@ public class Game implements Runnable
             System.out.println("Platform Amount: " + platforms.size());
             System.out.println("Enemies Amount: " + enemies.size());
             System.out.println("Player Center X: " + player.box.centerX + ", Player Center Y: " + player.box.centerY);
-            System.out.println("Player Top: " + player.box.getTop() + ", Player Bottom: " + player.box.getBottom() + ", Player Left: " + player.box.getLeft() + ", Player Right: " + player.box.getRight());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -113,9 +112,7 @@ public class Game implements Runnable
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_SPACE -> {
                         if(state == GameStates.Running) {
-                            if(BoxCollider.isOnPlatforms(player, platforms)) {
-                                player.yVel -= JUMP_SPEED;
-                            }
+                            player.firing = true;
                         }
                     }
                     case KeyEvent.VK_ESCAPE -> {
@@ -162,7 +159,11 @@ public class Game implements Runnable
                         }
                     }
                     case KeyEvent.VK_W -> {
-
+                        if(state == GameStates.Running) {
+                            if(BoxCollider.isOnPlatforms(player, platforms)) {
+                                player.yVel -= JUMP_SPEED;
+                            }
+                        }
                     }
                     //Move Left
                     case KeyEvent.VK_A -> {
@@ -186,6 +187,11 @@ public class Game implements Runnable
             public void keyReleased(KeyEvent e)
             {
                 switch(e.getKeyCode()) {
+                    case KeyEvent.VK_SPACE -> {
+                        player.firing = false;
+                        player.projCount = 1;
+                        System.out.println("Stopped firing");
+                    }
                     //Stops moving left
                     case KeyEvent.VK_A -> {
                         player.xVel = 0;
@@ -212,37 +218,55 @@ public class Game implements Runnable
             if (state == GameStates.Running)
             {
                 if(goLeft) {
+                    player.direction = Directions.LEFT;
                     player.xVel -= 0.1f;
                     player.moveHorizontal();
                 }
                 
                 if(goRight) {
+                    player.direction = Directions.RIGHT;
                     player.xVel += 0.1f;
                     player.moveHorizontal();
+                }
+
+                player.update();
+
+                if(player.fb != null) {
+                    ArrayList<Sprite> projColList = BoxCollider.checkCollisionList(player.fb, platforms);
+                    player.fb.update(projColList);
                 }
 
                 //Checks for collisions and resolves them
                 BoxCollider.resolvePlatformCollisions(player, platforms);
                 for(Enemy enemy : enemies) {
-                    enemy.update();
-                    BoxCollider.resolvePlatformCollisions(enemy, platforms);
-                    boolean enemyCollision = BoxCollider.checkCollision(player, enemy);
-                    if(!debug) {
-                    if(enemyCollision) {
-                        System.out.println("You died!");
-                        state = GameStates.Pause;
+                    if(enemy.isAlive) {
+                        enemy.update();
+                        BoxCollider.resolvePlatformCollisions(enemy, platforms);
+                        boolean playerCollision = BoxCollider.checkCollision(player, enemy);
+
+                        if(!debug) {
+                            if(playerCollision) {
+                                System.out.println("You died!");
+                                state = GameStates.Pause;
+                            }
+
+                            if(player.fb != null && player.fb.isActive) {
+                                boolean isDead = BoxCollider.checkCollision(player.fb, enemy);
+                                if(isDead) {
+                                    enemy.isAlive = false;
+                                    player.fb.isActive = false;
+                                }
+                            }
+                        }
                     }
-                }
                 }
 
                 boolean outOfBounds = player.box.getBottom() > bottomBoundary + boundaryGrace;
                 if(outOfBounds) {
-                    System.out.println("Out of Bounds!");
-                    state = GameStates.Pause;
+                    state = GameStates.Lose;
                 }
 
                 if(BoxCollider.checkCollision(player, winFlag)) {
-                    System.out.println("You win!");
                     state = GameStates.Win;
                 }
             }
@@ -262,11 +286,9 @@ public class Game implements Runnable
 
     public void reset()
     {
-        player.box.centerX = (float) player.box.origin.x + (player.box.width / 2);
-        player.box.centerY = (float) player.box.origin.y + (player.box.height / 2);
+        player.reset();
         for(Enemy enemy : enemies) {
-            enemy.box.centerX = (float)enemy.box.origin.x + (enemy.box.width / 2);
-            enemy.box.centerY = (float)enemy.box.origin.y + (enemy.box.height / 2);
+            enemy.reset();
         }
         state = GameStates.Running;
     }
