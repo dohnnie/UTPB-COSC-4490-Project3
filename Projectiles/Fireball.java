@@ -1,5 +1,6 @@
 package Projectiles;
 
+import Audio.AudioPlayer;
 import Enums.Directions;
 import GameObjects.Player;
 import GameObjects.Sprite;
@@ -41,9 +42,8 @@ public class Fireball extends Sprite{
 
             if(!platforms.isEmpty()) {
                 isActive = false;
+                AudioPlayer.playSound("./data/sound/fireball-collision.wav");
             }
-        } else {
-            
-        }
+        } 
     }
 }

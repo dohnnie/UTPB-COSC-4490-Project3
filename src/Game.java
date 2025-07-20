@@ -1,5 +1,6 @@
 package src;
 
+import Audio.AudioPlayer;
 import Collision.BoxCollider;
 import Enums.Directions;
 import Enums.GameStates;
@@ -162,6 +163,7 @@ public class Game implements Runnable
                         if(state == GameStates.Running) {
                             if(BoxCollider.isOnPlatforms(player, platforms)) {
                                 player.yVel -= JUMP_SPEED;
+                                AudioPlayer.playSound("./data/sound/jumping.wav");
                             }
                         }
                     }
@@ -248,6 +250,7 @@ public class Game implements Runnable
                             if(playerCollision) {
                                 System.out.println("You died!");
                                 state = GameStates.Pause;
+                                AudioPlayer.playSound("./data/sound/lose.wav");
                             }
 
                             if(player.fb != null && player.fb.isActive) {
@@ -255,6 +258,7 @@ public class Game implements Runnable
                                 if(isDead) {
                                     enemy.isAlive = false;
                                     player.fb.isActive = false;
+                                    AudioPlayer.playSound("./data/sound/fireball-collision.wav");
                                 }
                             }
                         }
@@ -264,10 +268,12 @@ public class Game implements Runnable
                 boolean outOfBounds = player.box.getBottom() > bottomBoundary + boundaryGrace;
                 if(outOfBounds) {
                     state = GameStates.Lose;
+                    AudioPlayer.playSound("./data/sound/lose.wav");
                 }
 
                 if(BoxCollider.checkCollision(player, winFlag)) {
                     state = GameStates.Win;
+                    AudioPlayer.playSound("./data/sound/win.wav");
                 }
             }
 

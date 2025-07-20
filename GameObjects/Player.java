@@ -1,5 +1,6 @@
 package GameObjects;
 
+import Audio.AudioPlayer;
 import Enums.Directions;
 import Projectiles.Fireball;
 import java.awt.*;
@@ -42,6 +43,8 @@ public class Player extends Sprite{
                 int drawY = (int)box.centerY - (fbHeight / 2);
                 fb = new Fireball("./data/Mario.png", new Point(drawX, drawY), fbWidth, fbHeight, this);
                 fb.isActive = true;
+                AudioPlayer.playSound("./data/sound/firing.wav");
+
             } catch (IOException e) {
                 System.out.println("Failed in creating a fireball");
                 e.printStackTrace();
