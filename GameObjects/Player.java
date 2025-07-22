@@ -28,6 +28,11 @@ public class Player extends Sprite{
     }
 
     public void moveHorizontal() {
+        if(xVel > 5) {
+            xVel = 5;
+        } else if(xVel < -5) {
+            xVel = -5;
+        }
         box.centerX += xVel;
     }
 
@@ -56,8 +61,9 @@ public class Player extends Sprite{
     @Override
     public void reset() {
         super.reset();
-
-        fb.isActive = false;
+        if(fb != null) {
+            fb.isActive = false;
+        }
         firing = false;
         direction = Directions.RIGHT;
     }

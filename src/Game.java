@@ -43,19 +43,19 @@ public class Game implements Runnable
 
     //Misc.
     public boolean debug = false;
-    public GameStates state = GameStates.Loading;
+    public boolean lastDebugState = debug;
+    public GameStates state = GameStates.Menu;
     public double volume = 0.3;
+    String filePath = "./data/test_level.csv";
 
     public Game()
     {
-        //Initializes a JFrame
         JFrame frame = new JFrame("Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setUndecorated(true);
-        String filePath = "./data/test_level.csv";
+        //String filePath = "./data/test_level.csv";
 
-        //Gets Screen Size
         tk = Toolkit.getDefaultToolkit();
         System.out.println("Screen Width: " + tk.getScreenSize().width + ", Screen Height: " + tk.getScreenSize().height);
         bottomBoundary = tk.getScreenSize().height;
@@ -63,38 +63,40 @@ public class Game implements Runnable
         frame.setVisible(true);
         frame.requestFocus();
 
-        //From this point on, the program can draw to the JFrame
         canvas = new GameCanvas(this, frame.getGraphics());
         frame.add(canvas);
 
-        //Starts loading file data into necessary arrays
-        try {
+        /*try {
             if(state == GameStates.Loading) {
-            platforms = new ArrayList<>();
-            enemies = new ArrayList<>();
+                platforms = new ArrayList<>();
+                enemies = new ArrayList<>();
 
 
-            //I have to do a funky workaround for pass by reference when loading player data
-            Player[] playerRef = new Player[1];
-            Sprite[] objRef = new Sprite[1];
-            LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef, objRef);
+                 
+                 * Because you can't pass by reference in java, i have to an evil workaround to pass an object reference between the level loader
+                 * and the game engine, because i'm not saving the player or win object to an array list.
+                 * This is probably scalable to allow for multiple player objects and win objects to exist within a list but i'm not messing with that
+                
+                Player[] playerRef = new Player[1];
+                Sprite[] objRef = new Sprite[1];
+                LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef, objRef);
 
-            winFlag = objRef[0];
-            player = playerRef[0];
-            state = GameStates.Running;
+                winFlag = objRef[0];
+                player = playerRef[0];
+                state = GameStates.Running;
 
-            //Debug print statements
-            System.out.println("Platform Amount: " + platforms.size());
-            System.out.println("Enemies Amount: " + enemies.size());
-            System.out.println("Player Center X: " + player.box.centerX + ", Player Center Y: " + player.box.centerY);
+                //Debug print statements
+                System.out.println("Platform Amount: " + platforms.size());
+                System.out.println("Enemies Amount: " + enemies.size());
+                System.out.println("Player Center X: " + player.box.centerX + ", Player Center Y: " + player.box.centerY);
             }
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error reading file");
             System.exit(0);
         }
+        */
 
-        //Startins drawing to the JFrame
         Thread drawLoop = new Thread(canvas);
         drawLoop.start();
 
@@ -118,45 +120,16 @@ public class Game implements Runnable
                     }
                     case KeyEvent.VK_ESCAPE -> {
                         switch(state) {
-                            case GameStates.Running -> {state = GameStates.Pause; }
-                            case GameStates.Pause -> { state = GameStates.Running; }
-                        }
-                    }
-                    case KeyEvent.VK_UP -> {
-                        if(state == GameStates.Pause) {
-                            canvas.cursor--;
-                            canvas.cursor = Math.max(canvas.cursor, 0);
-                        }
-                    }
-                    case KeyEvent.VK_DOWN -> {
-                        if(state == GameStates.Pause) {
-                            canvas.cursor++;
-                            canvas.cursor = Math.min(canvas.cursor, 4);
-                        }
-                    }
-                    case KeyEvent.VK_RIGHT -> {
-                        if(state == GameStates.Pause) {
-                            if(canvas.cursor == 2) {
-                                volume += 0.1;
-                                volume = Math.min(volume, 1.0);
+                            case GameStates.Running -> { 
+                                state = GameStates.Pause;
+                                lastDebugState = debug;
+                                debug = false;
                             }
-                        }
-                    }
-                    case KeyEvent.VK_LEFT -> {
-                        if(state == GameStates.Pause) {
-                            if(canvas.cursor == 2) {
-                                volume -= 0.1;
-                                volume = Math.max(volume, 0.0);
+                            case GameStates.Pause -> { 
+                                state = GameStates.Running;
+                                debug = lastDebugState;
                             }
-                        }
-                    }
-                    case KeyEvent.VK_ENTER -> {
-                        if(state == GameStates.Pause) {
-                            switch(canvas.cursor) {
-                                case 0 -> { reset(); }
-                                case 1 -> { System.exit(0); }
-                                case 3 -> { debug = !debug; }
-                            }
+                            default -> { }
                         }
                     }
                     case KeyEvent.VK_W -> {
@@ -167,20 +140,49 @@ public class Game implements Runnable
                             }
                         }
                     }
-                    //Move Left
                     case KeyEvent.VK_A -> {
                         goLeft = true;
                     }
-                    case KeyEvent.VK_S -> {
-
-                    }
-                    //Move Right
                     case KeyEvent.VK_D -> {
                         goRight = true;
                     }
-                    //Enables and disables debug
                     case KeyEvent.VK_1 -> {
-                        debug = !debug;
+                        switch(state) {
+                            case Running -> { debug = !debug; }
+                        }
+                    }
+                    case KeyEvent.VK_R -> {
+                        if(state == GameStates.Lose || state == GameStates.Pause || state == GameStates.Win) {
+                            reset();
+                        }
+                    }
+                    case KeyEvent.VK_E -> {
+                        switch(state) {
+                            case Pause:
+                            case Win:
+                            case Menu:
+                            case Lose: { 
+                                System.exit(0);
+                            }
+                        }
+                    }
+                    case KeyEvent.VK_C -> {
+                        switch(state) {
+                            case Win -> {
+                                reset();
+                            }
+                            case Pause -> {
+                                state = GameStates.Running;
+                            }
+                        }
+                    }
+                    case KeyEvent.VK_S -> {
+                        switch(state) {
+                            case Menu -> {
+                                state = GameStates.Loading;
+                                start(filePath);
+                            }
+                        }
                     }
                 }
             }
@@ -192,14 +194,11 @@ public class Game implements Runnable
                     case KeyEvent.VK_SPACE -> {
                         player.firing = false;
                         player.projCount = 1;
-                        System.out.println("Stopped firing");
                     }
-                    //Stops moving left
                     case KeyEvent.VK_A -> {
                         player.xVel = 0;
                         goLeft = false;
                     }
-                    //Stops moving right
                     case KeyEvent.VK_D -> {
                         player.xVel = 0;
                         goRight = false;
@@ -238,7 +237,9 @@ public class Game implements Runnable
                     player.fb.update(projColList);
                 }
 
-                //Checks for collisions and resolves them
+                //Evil collision checks
+                //I don't know a better way to check for collisions other than iterating through a list
+                //and checking each object separately with each other object
                 BoxCollider.resolvePlatformCollisions(player, platforms);
                 for(Enemy enemy : enemies) {
                     if(enemy.isAlive) {
@@ -246,10 +247,11 @@ public class Game implements Runnable
                         BoxCollider.resolvePlatformCollisions(enemy, platforms);
                         boolean playerCollision = BoxCollider.checkCollision(player, enemy);
 
+                        //I don't want to have to play the game if i want to test something
                         if(!debug) {
                             if(playerCollision) {
                                 System.out.println("You died!");
-                                state = GameStates.Pause;
+                                state = GameStates.Lose;
                                 AudioPlayer.playSound("./data/sound/lose.wav");
                             }
 
@@ -297,6 +299,41 @@ public class Game implements Runnable
             enemy.reset();
         }
         state = GameStates.Running;
+        debug = false;
+        canvas.viewOrigin.x = 0;
+        canvas.viewOrigin.y = 0;
+    }
+
+    public void start(String filePath) {
+        try {
+            if(state == GameStates.Loading) {
+                platforms = new ArrayList<>();
+                enemies = new ArrayList<>();
+
+
+                        
+                /* Because you can't pass by reference in java, i have to an evil workaround to pass an object reference between the level loader
+                * and the game engine, because i'm not saving the player or win object to an array list.
+                * This is probably scalable to allow for multiple player objects and win objects to exist within a list but i'm not messing with that
+                */
+                Player[] playerRef = new Player[1];
+                Sprite[] objRef = new Sprite[1];
+                LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef, objRef);
+
+                winFlag = objRef[0];
+                player = playerRef[0];
+                state = GameStates.Running;
+
+                //Debug print statements
+                System.out.println("Platform Amount: " + platforms.size());
+                System.out.println("Enemies Amount: " + enemies.size());
+                System.out.println("Player Center X: " + player.box.centerX + ", Player Center Y: " + player.box.centerY);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error reading file");
+            System.exit(0);
+        }
     }
 
     public static void main(String[] args)
