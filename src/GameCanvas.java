@@ -2,8 +2,10 @@ package src;
 
 import Enums.GameStates;
 import GameObjects.*;
+import ParticleSystem.Particle;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 import javax.swing.*;
 
 public class GameCanvas extends JPanel implements Runnable
@@ -24,6 +26,8 @@ public class GameCanvas extends JPanel implements Runnable
     public int screenWidth, screenHeight;
     int width, height;
 
+    public Particle[] particles;
+
     public GameCanvas(Game game, Graphics g)
     {
         this.game = game;
@@ -31,6 +35,11 @@ public class GameCanvas extends JPanel implements Runnable
         viewOrigin = new Point(0, 0);
         screenWidth = game.tk.getScreenSize().width;
         screenHeight = game.tk.getScreenSize().height;
+        particles = new Particle[100];
+        Random rand = new Random();
+        for(int i = 0; i < particles.length; i++) {
+            particles[i] = new Particle(1000, 500, 100, rand.nextInt(), 5);
+        }
 
     }
 
@@ -75,8 +84,27 @@ public class GameCanvas extends JPanel implements Runnable
                 g2d.translate(-viewOrigin.x, -viewOrigin.y);
 
                 game.player.draw(g2d);
-                if(game.player.fb != null && game.player.fb.isActive) {
-                    game.player.fb.draw(g2d);
+                // Evil nesting for drawing a fireball particle on collision
+                if(game.player.fb != null) {
+                    if(game.player.fb.isActive) {
+                        game.player.fb.draw(g2d);
+                    } else {
+                        /*
+                         * When a fireball collides with an enemy sprite it will draw the particles at the position
+                         * of the fireball's previous collision location if it collided with a wall last and will keep drawing the particles
+                         * and if it hit another enemy sprite previously it will not draw anything
+                         */
+                        if(game.player.fbParticle[0] != null && game.player.fbParticle[0].isAlive()) {
+                            g2d.setColor(Color.RED);
+                            for(Particle particle : game.player.fbParticle) {
+                                if(particle.isAlive()) {
+                                    System.out.println("Drawing particles");
+                                    particle.draw(g2d);
+                                }
+                            }
+
+                        }
+                    }
                 }
                 game.winFlag.draw(g2d);
                 for (Sprite platform : game.platforms) {
@@ -85,6 +113,13 @@ public class GameCanvas extends JPanel implements Runnable
                 for (Enemy enemy : game.enemies) {
                     if(enemy.isAlive) {
                         enemy.draw(g2d);
+                    } else {
+                        if(game.player.fbParticle[0] != null) {
+                            for(Particle particle : game.player.fbParticle) {
+                                g2d.setColor(Color.RED);
+                                particle.draw(g2d);
+                            }   
+                        }
                     }
                 }
 
@@ -102,6 +137,13 @@ public class GameCanvas extends JPanel implements Runnable
                     if(game.player.fb != null) {
                         game.player.fb.box.drawBox(g2d);
                     }
+                }
+            } else if(game.state == GameStates.Testing) {
+                g2d.setColor(Color.WHITE);
+                g2d.fillRect(0, 0, width, height);
+                for(Particle particle : particles) {
+                    g2d.setColor(Color.BLACK);
+                    particle.draw(g2d);
                 }
             } else if(game.state != GameStates.Running && game.state != GameStates.Loading) {
                 g2d.setColor(Color.BLACK);

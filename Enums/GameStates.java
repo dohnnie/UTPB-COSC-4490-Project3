@@ -7,4 +7,5 @@ public enum GameStates {
     Menu,
     Win,
     Lose,
+    Testing,
 }

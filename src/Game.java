@@ -6,6 +6,7 @@ import Enums.Directions;
 import Enums.GameStates;
 import GameObjects.*;
 import LevelEditor.*;
+import ParticleSystem.Particle;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -21,7 +22,7 @@ public class Game implements Runnable
     private final GameCanvas canvas;
     public final int SPRITE_SIZE = 100;
     private int bottomBoundary;
-    private int boundaryGrace = 45;
+    private final int boundaryGrace = 45;
 
     //Player movement clamps and flags
     public Player player;
@@ -54,7 +55,6 @@ public class Game implements Runnable
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setUndecorated(true);
-        //String filePath = "./data/test_level.csv";
 
         tk = Toolkit.getDefaultToolkit();
         System.out.println("Screen Width: " + tk.getScreenSize().width + ", Screen Height: " + tk.getScreenSize().height);
@@ -65,38 +65,6 @@ public class Game implements Runnable
 
         canvas = new GameCanvas(this, frame.getGraphics());
         frame.add(canvas);
-
-        /*try {
-            if(state == GameStates.Loading) {
-                platforms = new ArrayList<>();
-                enemies = new ArrayList<>();
-
-
-                 
-                 * Because you can't pass by reference in java, i have to an evil workaround to pass an object reference between the level loader
-                 * and the game engine, because i'm not saving the player or win object to an array list.
-                 * This is probably scalable to allow for multiple player objects and win objects to exist within a list but i'm not messing with that
-                
-                Player[] playerRef = new Player[1];
-                Sprite[] objRef = new Sprite[1];
-                LevelLoader.readCSV(new File(filePath), SPRITE_SIZE, platforms, enemies, playerRef, objRef);
-
-                winFlag = objRef[0];
-                player = playerRef[0];
-                state = GameStates.Running;
-
-                //Debug print statements
-                System.out.println("Platform Amount: " + platforms.size());
-                System.out.println("Enemies Amount: " + enemies.size());
-                System.out.println("Player Center X: " + player.box.centerX + ", Player Center Y: " + player.box.centerY);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error reading file");
-            System.exit(0);
-        }
-        */
-
         Thread drawLoop = new Thread(canvas);
         drawLoop.start();
 
@@ -234,9 +202,8 @@ public class Game implements Runnable
 
                 if(player.fb != null) {
                     ArrayList<Sprite> projColList = BoxCollider.checkCollisionList(player.fb, platforms);
-                    player.fb.update(projColList);
+                    player.fb.update(projColList, player.fbParticle);
                 }
-
                 //Evil collision checks
                 //I don't know a better way to check for collisions other than iterating through a list
                 //and checking each object separately with each other object
@@ -277,6 +244,11 @@ public class Game implements Runnable
                     state = GameStates.Win;
                     AudioPlayer.playSound("./data/sound/win.wav");
                 }
+            } else if(state == GameStates.Testing) {
+                int delta = 1;
+                for(Particle particle : canvas.particles) {
+                    particle.update(delta);
+                }
             }
 
             long sleep = (long) waitTime - (System.nanoTime() - startTime) / 1000000;
@@ -309,8 +281,6 @@ public class Game implements Runnable
             if(state == GameStates.Loading) {
                 platforms = new ArrayList<>();
                 enemies = new ArrayList<>();
-
-
                         
                 /* Because you can't pass by reference in java, i have to an evil workaround to pass an object reference between the level loader
                 * and the game engine, because i'm not saving the player or win object to an array list.

@@ -2,6 +2,7 @@ package GameObjects;
 
 import Audio.AudioPlayer;
 import Enums.Directions;
+import ParticleSystem.Particle;
 import Projectiles.Fireball;
 import java.awt.*;
 import java.io.IOException;
@@ -13,11 +14,14 @@ public class Player extends Sprite{
     public boolean firing;
     public int projCount = 1;
 
+    public Particle[] fbParticle;
+
     public Player(String imageFile, Point origin) throws IOException {
         super(imageFile, origin);
 
         firing = false;
         direction = Directions.RIGHT;
+        fbParticle = new Particle[5];
     }
 
     public void selectDirection() {
@@ -40,7 +44,6 @@ public class Player extends Sprite{
     public void update() {
 
         if(firing && projCount > 0) {
-            System.out.println("Firing in player");
             try {
                 int fbWidth = 50;
                 int fbHeight = 50;
@@ -55,6 +58,12 @@ public class Player extends Sprite{
                 e.printStackTrace();
             }
             projCount--;
+        }
+
+        if(fbParticle[0] != null) {
+            for(Particle particle : fbParticle) {
+                particle.update(1);
+            }
         }
     }
 
