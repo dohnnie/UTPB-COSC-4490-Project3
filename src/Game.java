@@ -7,6 +7,7 @@ import Enums.GameStates;
 import GameObjects.*;
 import LevelEditor.*;
 import ParticleSystem.Particle;
+import Projectiles.Fireball;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -42,12 +43,21 @@ public class Game implements Runnable
     public ArrayList<Sprite> platforms;
     public ArrayList<Enemy> enemies;
 
+    //Projectile Settings
+    public int projWidth = 50;
+    public int projHeight = 50;
+    public String projImage = "./data/Fireball.png";
+
     //Misc.
-    public boolean debug = false;
+    public boolean debug = true;
+    public int timeToLive = 20;
     public boolean lastDebugState = debug;
     public GameStates state = GameStates.Menu;
     public double volume = 0.3;
     String filePath = "./data/test_level.csv";
+
+    public Particle[] particles = new Particle[5];
+    public Fireball fireball;
 
     public Game()
     {
@@ -83,7 +93,14 @@ public class Game implements Runnable
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_SPACE -> {
                         if(state == GameStates.Running) {
-                            player.firing = true;
+                            try {
+                                int drawProjX = (int)player.box.centerX - (projWidth / 2);
+                                int drawProjY = (int)player.box.centerY - (projHeight / 2);
+                                fireball = new Fireball(projImage, new Point(drawProjX, drawProjY), 50, 50, player);
+                                AudioPlayer.playSound("./data/sound/firing.wav");
+                            } catch (IOException io) {
+                                io.printStackTrace();
+                            }
                         }
                     }
                     case KeyEvent.VK_ESCAPE -> {
@@ -129,8 +146,14 @@ public class Game implements Runnable
                             case Pause:
                             case Win:
                             case Menu:
+                            case Testing:
                             case Lose: { 
                                 System.exit(0);
+                                break;
+                            }
+                            case Loading:
+                            case Running: {
+                                break;
                             }
                         }
                     }
@@ -160,8 +183,7 @@ public class Game implements Runnable
             {
                 switch(e.getKeyCode()) {
                     case KeyEvent.VK_SPACE -> {
-                        player.firing = false;
-                        player.projCount = 1;
+                        
                     }
                     case KeyEvent.VK_A -> {
                         player.xVel = 0;
@@ -198,18 +220,29 @@ public class Game implements Runnable
                     player.moveHorizontal();
                 }
 
-                player.update();
-
-                if(player.fb != null) {
-                    ArrayList<Sprite> projColList = BoxCollider.checkCollisionList(player.fb, platforms);
-                    player.fb.update(projColList, player.fbParticle);
+                if(fireball != null) {
+                    if(fireball.isActive) {
+                        ArrayList<Sprite> projColList = BoxCollider.checkCollisionList(fireball, platforms);
+                        ArrayList<Enemy> enemyList = BoxCollider.checkEnemyCollisionList(fireball, enemies);
+                        fireball.update();
+                        
+                        if((!projColList.isEmpty() || !enemyList.isEmpty())) {
+                            fireball.collision(particles, timeToLive);
+                            if(!enemyList.isEmpty()) {
+                                enemies.remove(enemyList.getFirst());
+                            }
+                        }
+                    } else {
+                        for(Particle particle : particles) {
+                            if(particle.isAlive() && !fireball.isActive) {
+                                particle.update(1);
+                            }
+                        }       
+                    }
                 }
-                //Evil collision checks
-                //I don't know a better way to check for collisions other than iterating through a list
-                //and checking each object separately with each other object
+
                 BoxCollider.resolvePlatformCollisions(player, platforms);
                 for(Enemy enemy : enemies) {
-                    if(enemy.isAlive) {
                         enemy.update();
                         BoxCollider.resolvePlatformCollisions(enemy, platforms);
                         boolean playerCollision = BoxCollider.checkCollision(player, enemy);
@@ -221,17 +254,7 @@ public class Game implements Runnable
                                 state = GameStates.Lose;
                                 AudioPlayer.playSound("./data/sound/lose.wav");
                             }
-
-                            if(player.fb != null && player.fb.isActive) {
-                                boolean isDead = BoxCollider.checkCollision(player.fb, enemy);
-                                if(isDead) {
-                                    enemy.isAlive = false;
-                                    player.fb.isActive = false;
-                                    AudioPlayer.playSound("./data/sound/fireball-collision.wav");
-                                }
-                            }
                         }
-                    }
                 }
 
                 boolean outOfBounds = player.box.getBottom() > bottomBoundary + boundaryGrace;
@@ -266,11 +289,9 @@ public class Game implements Runnable
 
     public void reset()
     {
-        player.reset();
-        for(Enemy enemy : enemies) {
-            enemy.reset();
-        }
-        state = GameStates.Running;
+        state = GameStates.Loading;
+        start(filePath);
+        fireball = null;
         debug = false;
         canvas.viewOrigin.x = 0;
         canvas.viewOrigin.y = 0;
@@ -281,6 +302,10 @@ public class Game implements Runnable
             if(state == GameStates.Loading) {
                 platforms = new ArrayList<>();
                 enemies = new ArrayList<>();
+
+                for(int i = 0; i < particles.length; i++) {
+                    particles[i] = new Particle(0, 0, timeToLive, (int)(Math.random() * 180), 5);
+                }
                         
                 /* Because you can't pass by reference in java, i have to an evil workaround to pass an object reference between the level loader
                 * and the game engine, because i'm not saving the player or win object to an array list.

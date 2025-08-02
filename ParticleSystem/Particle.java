@@ -29,6 +29,12 @@ public class Particle{
         }
     }
 
+    public void setPosition(int x, int y, int ttl) {
+        this.xPos = x;
+        this.yPos = y;
+        this.ttl = ttl;
+    }
+
     public void draw(Graphics g) {
         g.fillOval(xPos, yPos, 10, 10);
     }

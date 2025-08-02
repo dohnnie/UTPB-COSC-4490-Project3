@@ -85,22 +85,14 @@ public class GameCanvas extends JPanel implements Runnable
 
                 game.player.draw(g2d);
                 // Evil nesting for drawing a fireball particle on collision
-                if(game.player.fb != null) {
-                    if(game.player.fb.isActive) {
-                        game.player.fb.draw(g2d);
+                if(game.fireball != null) {
+                    if(game.fireball.isActive) {
+                        game.fireball.draw(g2d);
                     } else {
-                        /*
-                         * When a fireball collides with an enemy sprite it will draw the particles at the position
-                         * of the fireball's previous collision location if it collided with a wall last and will keep drawing the particles
-                         * and if it hit another enemy sprite previously it will not draw anything
-                         */
-                        if(game.player.fbParticle[0] != null && game.player.fbParticle[0].isAlive()) {
+                        if(game.particles[0].isAlive()) {
                             g2d.setColor(Color.RED);
-                            for(Particle particle : game.player.fbParticle) {
-                                if(particle.isAlive()) {
-                                    System.out.println("Drawing particles");
+                            for(Particle particle : game.particles) {
                                     particle.draw(g2d);
-                                }
                             }
 
                         }
@@ -111,22 +103,16 @@ public class GameCanvas extends JPanel implements Runnable
                     platform.draw(g2d);
                 }
                 for (Enemy enemy : game.enemies) {
-                    if(enemy.isAlive) {
-                        enemy.draw(g2d);
-                    } else {
-                        if(game.player.fbParticle[0] != null) {
-                            for(Particle particle : game.player.fbParticle) {
-                                g2d.setColor(Color.RED);
-                                particle.draw(g2d);
-                            }   
-                        }
-                    }
+                    enemy.draw(g2d);
                 }
 
                 if (game.debug) {
                     g2d.setColor(Color.BLACK);
-                    g2d.drawString(String.format("FPS = %.1f", rate), viewOrigin.x + 200, viewOrigin.y + 25);
-                    g2d.drawString(String.format("UPS = %.1f", game.rate), viewOrigin.x + 200, viewOrigin.y + 50);
+                    g2d.drawString(String.format("FPS = %.1f", rate), viewOrigin.x + 10, viewOrigin.y + 25);
+                    g2d.drawString(String.format("UPS = %.1f", game.rate), viewOrigin.x + 10, viewOrigin.y + 50);
+                    if(game.particles[0] != null) {
+                        g2d.drawString(String.format("Particle Lifetime = %d", game.particles[0].ttl), viewOrigin.x + 100, viewOrigin.y + 25);
+                    }
                     game.player.box.drawBox(g2d);
                     for (Sprite enemy : game.enemies) {
                         enemy.box.drawBox(g2d);
@@ -134,8 +120,8 @@ public class GameCanvas extends JPanel implements Runnable
                     for (Sprite platform : game.platforms) {
                         platform.box.drawBox(g2d);
                     }
-                    if(game.player.fb != null) {
-                        game.player.fb.box.drawBox(g2d);
+                    if(game.fireball != null) {
+                        game.fireball.box.drawBox(g2d);
                     }
                 }
             } else if(game.state == GameStates.Testing) {

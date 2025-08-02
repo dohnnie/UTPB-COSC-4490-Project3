@@ -7,7 +7,6 @@ import GameObjects.Sprite;
 import ParticleSystem.Particle;
 import java.awt.Point;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class Fireball extends Sprite{
     
@@ -17,14 +16,12 @@ public class Fireball extends Sprite{
     public int width;
     public int height;
 
-    public boolean isActive = false;
+    public boolean isActive;
     public Directions forward;
-    public Particle[] particles;
 
     public Fireball(String imageFile, Point origin, int width, int height, Player player) throws IOException {
         super(imageFile, origin, width, height);
 
-        particles = new Particle[5];
         if(player.direction == Directions.LEFT) {
             forward = Directions.LEFT;
             xVel = -5;
@@ -33,24 +30,21 @@ public class Fireball extends Sprite{
             forward = Directions.RIGHT;
             xVel = 5;
         }
+        isActive = true;
     }
 
-    public void reset() {
-        
-    }
-
-    public void update(ArrayList<Sprite> platforms, Particle[] fbParticle) {
+    @Override
+    public void update() {
         if(isActive) {
             box.centerX += xVel;
-
-            if(!platforms.isEmpty()) {
-                isActive = false;
-                for(int i = 0; i < fbParticle.length; i++) {
-                    Particle particle = new Particle((int)box.centerX, (int)box.centerY, 20, (int)(Math.random() * 180), 5);
-                    fbParticle[i] = particle;
-                }
-                AudioPlayer.playSound("./data/sound/fireball-collision.wav");
-            }
         } 
+    }
+
+    public void collision(Particle[] particles, int timeToLive) {
+        isActive = false;
+        for(Particle particle : particles) {
+            particle.setPosition((int)box.centerX, (int)box.centerY, timeToLive);
+        }
+        AudioPlayer.playSound("./data/sound/fireball-collision.wav");
     }
 }

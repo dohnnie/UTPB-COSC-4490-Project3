@@ -1,5 +1,6 @@
 package Collision;
 
+import GameObjects.Enemy;
 import GameObjects.Sprite;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -77,6 +78,17 @@ public class BoxCollider {
 
         return collisionList;
     }
+
+    public static ArrayList<Enemy> checkEnemyCollisionList(Sprite sprite, ArrayList<Enemy> list) {
+        ArrayList<Enemy> collisionList = new ArrayList<>();
+        for(Enemy enemy : list) {
+            if(checkCollision(sprite, enemy)) {
+                collisionList.add(enemy);
+            }
+        }
+
+        return collisionList;
+    }
     
     public static boolean isOnPlatforms(Sprite s, ArrayList<Sprite> walls) {
         s.box.centerY += 5;
@@ -87,20 +99,18 @@ public class BoxCollider {
     }
 
     /*
-     * TODO
+     * Bug: Because the sprite's y component changes every frame due to gravity it will always
+     * perform the vertical collision resolutions so if a horizontal collision were to occur it
+     * will just do the vertical resolution instead of the correct horizontal collision
      * 
-     * Currently, the method checks every platform the player is colliding with, and adds it to an arraylist called colList to check
-     * however, it's only getting the first sprite from that colList and setting the bottom of the sprite to the top of the colList sprite
-     * because, the if statement checks the velocity of the player to tell which direction the sprite is moving and changes the position accordingly
-     * The bug is that everything the sprite is colliding with is added to the first colList, and then since we're only checking the first sprite in the list
-     * that first sprite is causing the player to be moved on top of the y-level of the wall and this happens because the gravity being added to the player's
-     * y-velocity satisfies the if statement
+     * I don't know how to fix this bug without doing a major overhaul to the collision system
+     * which i've already done like 5 times, so i'm just going to leave it like this till i figure
+     * it out or till i have to change it.
      */
     public static void resolvePlatformCollisions(Sprite s, ArrayList<Sprite> walls) {
         s.yVel += s.GRAVITY;
-
-        //Vertical collision checks
         s.box.centerY += s.yVel;
+
         ArrayList<Sprite> colList = BoxCollider.checkCollisionList(s, walls);
         if(!colList.isEmpty()) {
             Sprite collided = colList.getFirst();
@@ -122,6 +132,7 @@ public class BoxCollider {
             } else if(s.xVel < 0){
                 s.box.setLeft(collided.box.getRight());
             }
+            s.xVel = 0;
         }
     }
 }
